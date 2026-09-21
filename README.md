@@ -2,13 +2,24 @@
 
 面向「AI 教学智能体平台 v13」的开发代码仓库。文档体系（PRD / 技术方案 / 规范）见上级目录 `AI教学智能体平台-v13/`，本仓库只承载代码与本地配置。
 
-## 当前进度（W1：环境 + 骨架 + 模型接入）
+## 当前进度（W2：教材知识库 + 智能问答 Agent）
 
+### W1（已完成）
 - [x] 项目骨架（app/ 目录结构、FastAPI 入口）
 - [x] 配置层（pydantic-settings，密钥走 .env）
 - [x] 模型工厂（DeepSeek V4.1，OpenAI 兼容接口）
 - [x] /health 健康检查 + /v1/chat 一句话问答连通验证
-- [ ] 后续：W2 智能问答 + 教材知识库（LightRAG）→ W3 PPT/教案 → W4 UML Agent
+
+### W2（代码已完成，索引已建成；QA 生成待 DeepSeek 账户充值）
+- [x] 教材源稿提取（4 份 docx → markdown，落盘于文档体系 `02-需求文档PRD/_教材源稿提取/`）
+- [x] 知识库构建脚本（`python -m app.knowledge_base.build [--force]`）
+  - LightRAG 1.5.7 + fastembed（bge-small-zh-v1.5，512 维，离线 ONNX）
+  - 已入库 14 块 / 24 分块向量，探针检索通过（26.5K 字符上下文）
+  - LLM 熔断降级：实体抽取失败不阻断建库（当前因 DeepSeek 余额不足降级为空图谱，纯向量模式可用）
+- [x] 智能问答链路（chains/rag_chain）：naive 纯向量检索 → 来源标注提取 → 四段式回答
+- [x] POST /v1/qa 接口（503 未建索引 / 502 兜底，服务不崩溃）
+- [ ] **待 DeepSeek 账户充值后**：`python -m app.knowledge_base.build --force` 重建补图谱（hybrid 检索）+ 真实 QA 演示
+- [ ] 后续：W3 PPT/教案 → W4 UML Agent
 
 ## 快速开始
 
@@ -21,12 +32,16 @@ pip install -r requirements.txt
 # 2. 配置密钥
 copy .env.example .env        # 填入 DEEPSEEK_API_KEY（已配置则跳过）
 
-# 3. 启动服务
+# 3. 构建知识库（首次会下载 Embedding 模型；需 DeepSeek 余额做实体抽取）
+python -m app.knowledge_base.build
+
+# 4. 启动服务
 uvicorn app.main:app --reload
 
-# 4. 验证
+# 5. 验证
 #    健康检查：   GET  http://127.0.0.1:8000/health
 #    一句话问答： POST http://127.0.0.1:8000/v1/chat  {"message": "你好"}
+#    教材问答：   POST http://127.0.0.1:8000/v1/qa    {"question": "什么是用例图？"}
 ```
 
 ## 目录结构
@@ -52,7 +67,10 @@ tests/                   # 与 app 对应的测试
 | pydantic / pydantic-settings | 请求校验与配置管理 |
 | python-dotenv | 读取 .env |
 | langchain / langchain-openai | LLM 调用（OpenAI 兼容接口接 DeepSeek） |
-| langgraph | W2+ 多 Agent 编排 |
+| langgraph | W3+ 多 Agent 编排 |
+| lightrag-hku | 知识库索引与检索（RAG 引擎） |
+| fastembed / numpy | 中文向量化（bge-small-zh-v1.5，离线 ONNX） |
+| python-docx / pypdf | 教材 docx/pdf 解析 |
 | pytest / ruff | 测试与静态检查 |
 
 ## 开发规范
