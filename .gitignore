@@ -10,6 +10,7 @@ venv/
 
 # 数据与索引（可重建）
 app/knowledge_base/embeddings/
+app/knowledge_base/lightrag_index/
 *.db
 *.sqlite3
 

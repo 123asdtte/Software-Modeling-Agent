@@ -16,3 +16,10 @@ httpx==0.28.1
 # 测试
 pytest==9.1.1
 ruff==0.16.8
+
+# W2 知识库（RAG）：LightRAG + fastembed + 文档解析
+lightrag-hku==1.5.7
+fastembed
+python-docx
+pypdf
+numpy

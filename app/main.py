@@ -1,6 +1,6 @@
-"""FastAPI 入口（v13 W1）：服务健康检查 + 一句话问答连通性验证。
+"""FastAPI 入口（v13）：健康检查 + 一句话问答 + 教材智能问答（RAG）。
 
-启动：uvicorn app.main:app --reload
+启动：python -m app 或 uvicorn app.main:app --reload
 """
 
 import logging
@@ -8,6 +8,7 @@ import logging
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
+from app.chains.rag_chain import build_qa_answer
 from app.config.settings import get_settings
 from app.models.llm import get_llm
 
@@ -33,6 +34,19 @@ class ChatResponse(BaseModel):
 
     reply: str
     model: str
+
+
+class QARequest(BaseModel):
+    """教材智能问答请求体。"""
+
+    question: str = Field(..., min_length=1, max_length=1000, description="学生问题")
+
+
+class QAResponse(BaseModel):
+    """教材智能问答响应体。"""
+
+    reply: str
+    sources: list[str]
 
 
 @app.get("/health")
@@ -62,3 +76,17 @@ def chat(req: ChatRequest) -> ChatResponse:
         logger.exception("模型调用失败")
         raise HTTPException(status_code=502, detail=f"模型调用失败：{exc}") from exc
     return ChatResponse(reply=reply, model=settings.model_name)
+
+
+@app.post("/v1/qa", response_model=QAResponse)
+async def qa(req: QARequest) -> QAResponse:
+    """教材智能问答（W2）：RAG 检索 + 四段式回答 + 来源标注。"""
+    try:
+        result = await build_qa_answer(req.question)
+    except FileNotFoundError as exc:
+        logger.warning("知识库索引未构建：%s", exc)
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("教材问答失败")
+        raise HTTPException(status_code=502, detail=f"教材问答失败：{exc}") from exc
+    return QAResponse(reply=result["reply"], sources=result["sources"])
