@@ -1,15 +1,18 @@
 # AI 教学智能体平台 v13 依赖清单（用途见 README「依赖说明」）
+# 说明：已按 2026-09-21 venv 实测版本锁定主依赖（LangChain 1.x 系列）。
 # 安装：pip install -r requirements.txt
-fastapi>=0.115.0
-uvicorn[standard]>=0.30.0
-pydantic>=2.7.0
-pydantic-settings>=2.3.0
-python-dotenv>=1.0.0
-langchain>=0.3.0
-langchain-openai>=0.2.0
-langgraph>=0.2.0
-httpx>=0.27.0
+fastapi==0.141.1
+uvicorn[standard]==0.53.0
+pydantic==2.13.5
+pydantic-settings==2.15.0
+python-dotenv==1.2.3
+langchain==1.4.2
+langchain-core==1.6.3
+langchain-openai==1.6.2
+langgraph==1.2.11
+openai==3.16.2
+httpx==0.28.1
 
 # 测试
-pytest>=8.0.0
-ruff>=0.5.0
+pytest==9.1.1
+ruff==0.16.8

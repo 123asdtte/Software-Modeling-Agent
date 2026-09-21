@@ -5,6 +5,7 @@
 避免程序误用旧密钥。
 """
 
+from functools import lru_cache
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -43,6 +44,7 @@ class Settings(BaseSettings):
     request_timeout: float = 60.0
 
 
+@lru_cache(maxsize=1)
 def get_settings() -> Settings:
-    """返回全局单例配置（pydantic-settings 自带缓存）。"""
+    """返回全局单例配置（进程内缓存，避免重复读 .env）。"""
     return Settings()

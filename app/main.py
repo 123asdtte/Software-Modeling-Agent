@@ -57,7 +57,8 @@ def chat(req: ChatRequest) -> ChatResponse:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
     try:
         reply = llm.invoke(req.message).content
-    except Exception as exc:  # noqa: BLE001 - 统一转为 HTTP 错误返回
+    except Exception as exc:
+        # 统一转为 HTTP 错误返回，避免内部异常暴露给前端
         logger.exception("模型调用失败")
         raise HTTPException(status_code=502, detail=f"模型调用失败：{exc}") from exc
     return ChatResponse(reply=reply, model=settings.model_name)
