@@ -59,8 +59,8 @@ async def _ensure_ready() -> LightRAG:
 async def retrieve_context(question: str, top_k: int = 5) -> str:
     """检索教材上下文（仅返回上下文，不生成回答）。
 
-    使用 naive 纯向量检索：离线稳定、不依赖图谱与关键词 LLM；
-    等知识库图谱补齐后可切 mode="hybrid" 获得更强召回。
+    使用 hybrid 三路召回（关键词 + 知识图谱 + 向量），图谱已由实体抽取补齐；
+    若图谱缺失可临时切 mode="naive" 纯向量兜底。
 
     Args:
         question: 学生问题。
@@ -69,7 +69,7 @@ async def retrieve_context(question: str, top_k: int = 5) -> str:
     Returns:
         str: 带【来源】标注的教材上下文；无命中时返回空串。
     """
-    param = QueryParam(mode="naive", only_need_context=True, top_k=top_k)
+    param = QueryParam(mode="hybrid", only_need_context=True, top_k=top_k)
     return await (await _ensure_ready()).aquery(question, param=param) or ""
 
 

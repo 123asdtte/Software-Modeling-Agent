@@ -10,16 +10,14 @@
 - [x] 模型工厂（DeepSeek V4.1，OpenAI 兼容接口）
 - [x] /health 健康检查 + /v1/chat 一句话问答连通验证
 
-### W2（代码已完成，索引已建成；QA 生成待 DeepSeek 账户充值）
+### W2（已完成，真实演示跑通）
 - [x] 教材源稿提取（4 份 docx → markdown，落盘于文档体系 `02-需求文档PRD/_教材源稿提取/`）
 - [x] 知识库构建脚本（`python -m app.knowledge_base.build [--force]`）
   - LightRAG 1.5.7 + fastembed（bge-small-zh-v1.5，512 维，离线 ONNX）
-  - 已入库 14 块 / 24 分块向量，探针检索通过（26.5K 字符上下文）
-  - LLM 熔断降级：实体抽取失败不阻断建库（当前因 DeepSeek 余额不足降级为空图谱，纯向量模式可用）
-- [x] 智能问答链路（chains/rag_chain）：naive 纯向量检索 → 来源标注提取 → 四段式回答
-- [x] POST /v1/qa 接口（503 未建索引 / 502 兜底，服务不崩溃）
-- [ ] **待 DeepSeek 账户充值后**：`python -m app.knowledge_base.build --force` 重建补图谱（hybrid 检索）+ 真实 QA 演示
-- [ ] 后续：W3 PPT/教案 → W4 UML Agent
+  - 已入库 14 块 / 24 分块向量，图谱 597 节点 / 954 边（实体抽取已用真实 LLM 补齐）
+- [x] 智能问答链路（chains/rag_chain）：hybrid 三路召回 → 来源标注提取 → 四段式回答
+- [x] POST /v1/qa 接口（503 未建索引 / 502 兜底），端到端实测通过（2026-09-21）
+- [ ] 后续：QA 评测集（≥30 问）→ W3 PPT/教案 → W4 UML Agent
 
 ## 快速开始
 
