@@ -17,7 +17,12 @@ FAKE_DECK = {
 
 def test_ppt_endpoint_ok(monkeypatch, tmp_path):
     """mock 链路后应返回大纲 + 页 + 下载地址，且文件真实生成。"""
-    monkeypatch.chdir(tmp_path)  # outputs 落盘到临时目录
+    # outputs 落盘到临时目录（绝对路径注入；项目根解析后不再依赖 cwd）
+    monkeypatch.setattr(
+        __import__("app.config.settings", fromlist=["get_settings"]).get_settings(),
+        "outputs_dir",
+        str(tmp_path / "outputs"),
+    )
 
     async def fake_deck(topic, minutes=90):
         return FAKE_DECK
@@ -59,7 +64,11 @@ def test_ppt_endpoint_502_on_error(monkeypatch):
 
 def test_lesson_endpoint_ok(monkeypatch, tmp_path):
     """教案端点返回 9 字段 JSON + markdown + docx 下载。"""
-    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(
+        __import__("app.config.settings", fromlist=["get_settings"]).get_settings(),
+        "outputs_dir",
+        str(tmp_path / "outputs"),
+    )
 
     from app.chains import generation_chain
 

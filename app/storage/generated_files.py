@@ -4,14 +4,16 @@
 - 文件名由服务端生成（uuid4.hex），绝不接受用户输入的文件名或路径；
 - 下载路径解析走扩展名白名单 + uuid 格式校验，防 `../`、URL 编码穿越与绝对路径；
 - 写入采用「临时文件 → os.replace 原子替换」，避免客户端下载到半成品；
-- 渲染失败时由调用方负责清理临时文件（本模块提供 cleanup）。
+- 渲染器（diagram_renderer）负责清理临时 PlantUML 文件；
+  本模块负责正式生成文件的原子保存与下载路径校验。
+- 相对 outputs_dir 基于项目根解析，不依赖进程启动 cwd。
 """
 
 import os
 import uuid
 from pathlib import Path
 
-from app.config.settings import get_settings
+from app.config.settings import get_settings, resolve_project_path
 
 # 每类生成文件允许的扩展名（下载白名单）
 ALLOWED_EXTENSIONS: dict[str, set[str]] = {
@@ -22,7 +24,8 @@ ALLOWED_EXTENSIONS: dict[str, set[str]] = {
 
 
 def _base_dir() -> Path:
-    return Path(get_settings().outputs_dir)
+    # 与 diagram_renderer 同一策略：相对路径基于项目根，任意 cwd 启动一致
+    return resolve_project_path(get_settings().outputs_dir)
 
 
 def save_bytes_atomic(kind: str, ext: str, data: bytes) -> str:

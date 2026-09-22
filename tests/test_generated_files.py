@@ -51,7 +51,9 @@ def test_atomic_write_no_tmp_leftover(tmp_path, monkeypatch):
 
 def test_cleanup_tmp(tmp_path, monkeypatch):
     """cleanup_tmp 删除 .tmp（不存在时静默）。"""
-    monkeypatch.chdir(tmp_path)
+    from app.config.settings import get_settings
+
+    monkeypatch.setattr(get_settings(), "outputs_dir", str(tmp_path / "outputs"))
     tmp = tmp_path / "outputs" / "uml" / "abc.png.tmp"
     tmp.parent.mkdir(parents=True, exist_ok=True)
     tmp.write_bytes(b"half")

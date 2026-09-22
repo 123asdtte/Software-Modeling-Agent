@@ -265,3 +265,21 @@ def test_uml_download_rejects_bad_names():
     """下载接口：非法文件名/穿越一律 404。"""
     for bad in ["../../.env", "x.png", "..%2F..%2F.env"]:
         assert client.get(f"/files/uml/{bad}").status_code in (404, 400)
+
+
+# ---------------- 路由表取证（防 _IncludedRouter 取证盲区误判）----------------
+
+
+def test_uml_routes_registered():
+    """路由注册取证：源 router 定义 + 422 实证双验证。
+
+    注意：FastAPI 新版把 include 的 router 存为无 path 属性的
+    _IncludedRouter，简单 getattr(path) 会误判路由不存在——不要用
+    遍历 app.routes 断言 include 路由的方式。"""
+    from app.api.uml import router as uml_router
+
+    src_paths = [r.path for r in uml_router.routes]
+    assert "/v1/uml/usecase" in src_paths  # routes 存储含 prefix 的完整路径
+    # 422 实证：路由存在（校验拒绝）而非 404（路由不存在），且不触发 LLM
+    resp = client.post("/v1/uml/usecase", json={})
+    assert resp.status_code == 422

@@ -11,6 +11,17 @@ from pathlib import Path
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# 项目根（app/config/ 向上 2 级）：相对配置路径统一基于项目根解析，
+# 不依赖进程启动 cwd（渲染子进程会切换 cwd）
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+
+def resolve_project_path(p: str | Path) -> Path:
+    """相对路径基于项目根解析；绝对路径原样返回。"""
+    path = Path(p)
+    return path if path.is_absolute() else PROJECT_ROOT / path
+
+
 # 项目 .env 为权威配置，覆盖系统/用户级同名环境变量
 _ENV_FILE = Path(__file__).resolve().parent.parent.parent / ".env"
 load_dotenv(_ENV_FILE, override=True)

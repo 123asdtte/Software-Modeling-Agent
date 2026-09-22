@@ -15,12 +15,12 @@ import logging
 import subprocess
 import uuid
 from enum import Enum
-from pathlib import Path
 from typing import Literal
 
 from pydantic import BaseModel
 
 from app.config.settings import get_settings
+from app.config.settings import resolve_project_path as _resolve
 from app.storage.generated_files import save_bytes_atomic
 
 logger = logging.getLogger(__name__)
@@ -46,22 +46,6 @@ class RenderResult(BaseModel):
 
 # 项目根（app/renderers/ 向上 3 级）：相对配置路径统一基于项目根解析，
 # 不依赖进程启动 cwd（cwd 会被渲染 subprocess 切到 work_dir）
-_PROJECT_ROOT = Path(__file__).resolve().parents[2]
-
-
-def _resolve(p: str) -> Path:
-    path = Path(p)
-    return path if path.is_absolute() else _PROJECT_ROOT / path
-
-
-# 项目根（app/renderers/ 向上 3 级）：相对配置路径统一基于项目根解析，
-# 不依赖进程启动 cwd（cwd 会被渲染 subprocess 切到 work_dir）
-_PROJECT_ROOT = Path(__file__).resolve().parents[2]
-
-
-def _resolve(p: str) -> Path:
-    path = Path(p)
-    return path if path.is_absolute() else _PROJECT_ROOT / path
 
 
 def _environment_ready() -> tuple[bool, str | None]:
