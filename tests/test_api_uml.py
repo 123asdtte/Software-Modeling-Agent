@@ -214,8 +214,7 @@ def test_render_field_rendered_with_download(monkeypatch, tmp_path):
         format = "png"
 
         def __init__(self):
-            name = save_bytes_atomic("uml", "png", b"\x89PNG fake")
-            self.path = str(tmp_path / "outputs" / "uml" / name)
+            self.filename = save_bytes_atomic("uml", "png", b"\x89PNG fake")
 
     import app.api.uml as uml_api
 

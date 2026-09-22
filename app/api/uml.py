@@ -12,11 +12,10 @@
 
 import asyncio
 import logging
-from pathlib import Path
 from typing import Literal
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from app.chains.uml_chain import generate_usecase_model
 from app.config.settings import get_settings
@@ -49,6 +48,28 @@ class UmlUseCaseRequest(BaseModel):
     format: Literal["png", "svg"] = "png"
 
 
+class RenderResponse(BaseModel):
+    """图片渲染结果（OpenAPI 完整结构）。
+
+    约定：rendered 时 format/download_url 必须存在；
+    source_only 时 download_url 必须为 null（避免指向不存在的文件）。
+    """
+
+    status: RenderStatus
+    format: Literal["png", "svg"] | None = None
+    download_url: str | None = None
+    reason: str | None = None
+
+    @model_validator(mode="after")
+    def _check_consistency(self) -> "RenderResponse":
+        if self.status == RenderStatus.RENDERED:
+            if not self.format or not self.download_url:
+                raise ValueError("rendered 状态必须携带 format 与 download_url")
+        elif self.download_url is not None:
+            raise ValueError("source_only 状态不应携带 download_url")
+        return self
+
+
 class UmlUseCaseResponse(BaseModel):
     """用例图生成响应体（OpenAPI 契约；原有字段名与语义不变）。
 
@@ -60,7 +81,7 @@ class UmlUseCaseResponse(BaseModel):
     model: dict
     plantuml: str
     review_report: ReviewReport
-    render: dict
+    render: RenderResponse
 
 
 @router.post("/usecase", response_model=UmlUseCaseResponse)
@@ -93,22 +114,21 @@ async def generate_usecase(req: UmlUseCaseRequest) -> UmlUseCaseResponse:
         raise HTTPException(status_code=500, detail=_ERR_INTERNAL) from exc
 
     # 阶段三：图片渲染（环境缺失/失败自动降级 source_only，不影响 200 响应）
-    render_info: dict = {"status": "source_only", "format": None, "download_url": None, "reason": None}
+    render_info = RenderResponse(status=RenderStatus.SOURCE_ONLY)
     if req.render:
         try:
             result = await asyncio.to_thread(render_plantuml_source, plantuml, req.format)
             if result.status == RenderStatus.RENDERED:
-                render_info = {
-                    "status": "rendered",
-                    "format": result.format,
-                    "download_url": f"/files/uml/{Path(result.path).name}",
-                    "reason": None,
-                }
+                render_info = RenderResponse(
+                    status=RenderStatus.RENDERED,
+                    format=result.format,
+                    download_url=f"/files/uml/{result.filename}",
+                )
             else:
-                render_info["reason"] = result.reason
+                render_info = RenderResponse(status=RenderStatus.SOURCE_ONLY, reason=result.reason)
         except Exception:  # noqa: BLE001 - 图片失败绝不让模型/质检结果整体失败
             logger.exception("图片渲染阶段异常（降级返回源码）")
-            render_info["reason"] = "图片渲染异常（已降级返回源码）"
+            render_info = RenderResponse(status=RenderStatus.SOURCE_ONLY, reason="图片渲染异常（已降级返回源码）")
 
     return UmlUseCaseResponse(
         diagram_type=model.type.value,

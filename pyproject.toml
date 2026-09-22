@@ -25,4 +25,5 @@ select = ["E", "F", "I", "B", "SIM"]
 testpaths = ["tests"]
 markers = [
     "integration: requires real external model/API",
+    "render_integration: requires local Java + plantuml.jar",
 ]
