@@ -97,6 +97,20 @@ tests/                   # 与 app 对应的测试
 | python-docx / pypdf | 教材 docx/pdf 解析 |
 | pytest / ruff | 测试与静态检查 |
 
+## 能力状态表（防止误判项目进度，AI/新人开发前必读）
+
+| 能力 | 状态 | 代码位置 |
+|---|---|---|
+| 教材 QA（RAG） | ✅ 已实现 | `app/chains/rag_chain.py` |
+| PPT 生成 | ✅ 已实现 | `app/chains/generation_chain.py` + `app/tools/ppt_generator.py` |
+| 教案生成 | ✅ 已实现 | `app/chains/generation_chain.py` + `app/tools/docx_exporter.py` |
+| 结构化输出工具 | ✅ 已实现 | `app/core/structured_output.py`（PPT/教案已接入，UML 复用） |
+| UML 用例图·领域模型 | ✅ 契约已冻结 | `app/models/uml.py` / `app/models/review.py` |
+| UML 用例图·渲染/规则/API | ❌ 未实现 | 仅目录边界 `app/renderers/` `app/rules/` `app/api/` |
+| UML 活动图 / 状态机图 | ❌ 未实现 | 仅有设计文档 |
+| 多 Agent Supervisor（LangGraph） | ❌ 未实现 | 仅有架构设计 |
+| 数据库 / FAISS·Milvus | ❌ 未实现 | RAG 用 LightRAG 内置存储 |
+
 ## 开发规范
 
 所有开发遵循 `docs/01-规范与流程/`：编码与命名规范、代码质量红线（禁止硬编码密钥、禁止提交 .env）、AI 辅助代码必须人工 review。
