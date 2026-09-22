@@ -71,6 +71,11 @@ class Settings(BaseSettings):
     uml_llm_timeout: float = 150.0
     uml_max_concurrency: int = 2
 
+    # PlantUML 本地图片渲染（jar 需手工放置，不进 Git；缺失时 API 降级返回源码）
+    java_command: str = "java"
+    plantuml_jar_path: str = "tools/plantuml.jar"
+    plantuml_timeout: float = 60.0
+
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:

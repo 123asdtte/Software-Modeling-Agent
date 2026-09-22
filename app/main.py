@@ -5,7 +5,6 @@
 
 import asyncio
 import logging
-import re
 import uuid
 from pathlib import Path
 
@@ -17,6 +16,7 @@ from app.api.uml import router as uml_router
 from app.chains.rag_chain import build_qa_answer
 from app.config.settings import get_settings
 from app.models.llm import get_llm
+from app.storage.generated_files import resolve_download_path  # 下载白名单解析（防穿越）
 
 logger = logging.getLogger(__name__)
 
@@ -27,17 +27,11 @@ _qa_semaphore = asyncio.Semaphore(settings.qa_max_concurrency)
 # /v1/ppt、/v1/lesson 并发闸门：结构化生成更重，2 路足够演示
 _gen_semaphore = asyncio.Semaphore(settings.gen_max_concurrency)
 
-# 下载文件名白名单：仅允许平台生成的 uuid.ext 形式，防路径穿越
-_SAFE_FILENAME_RE = re.compile(r"^[0-9a-f]{32}\.(pptx|docx|md)$")
-
 
 def _outputs_path(kind: str, filename: str) -> Path:
-    """解析下载路径并校验白名单（防 ../ 穿越）。"""
-    if not _SAFE_FILENAME_RE.match(filename):
+    path = resolve_download_path(kind, filename)
+    if path is None:
         raise HTTPException(status_code=404, detail="文件不存在")
-    path = Path(settings.outputs_dir) / kind / filename
-    if not path.is_file():
-        raise HTTPException(status_code=404, detail="文件不存在或已过期")
     return path
 
 
@@ -224,3 +218,10 @@ def download_ppt(filename: str) -> FileResponse:
 def download_lesson(filename: str) -> FileResponse:
     """下载生成的教案文件（uuid 白名单校验）。"""
     return FileResponse(_outputs_path("lesson", filename), filename=filename)
+
+
+@app.get("/files/uml/{filename}")
+def download_uml(filename: str) -> FileResponse:
+    """下载生成的 UML 图片（png/svg，uuid 白名单校验）。"""
+    media = "image/png" if filename.endswith(".png") else "image/svg+xml"
+    return FileResponse(_outputs_path("uml", filename), filename=filename, media_type=media)

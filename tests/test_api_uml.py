@@ -149,7 +149,7 @@ def test_usecase_response_contract(monkeypatch):
     resp = client.post("/v1/uml/usecase", json={"requirement": "学生发布商品"})
     body = resp.json()
     # 字段名与语义保持不变（评审：response_model 不改变已有字段）
-    assert set(body.keys()) == {"diagram_type", "model", "plantuml", "review_report"}
+    assert set(body.keys()) == {"diagram_type", "model", "plantuml", "review_report", "render"}
     assert body["diagram_type"] == "usecase"
     # OpenAPI 文档中注册了响应模型
     schema = client.get("/openapi.json").json()
@@ -193,3 +193,76 @@ def test_uml_concurrency_limit_enforced(monkeypatch):
 
     aio.run(run())
     assert peak == 1  # UML 专属信号量把并发压到 1
+
+
+# ---------------- 图片渲染集成（render 字段 / 下载接口）----------------
+
+
+def test_render_field_rendered_with_download(monkeypatch, tmp_path):
+    """渲染环境可用：render.status=rendered + download_url，下载回环成功。"""
+    monkeypatch.chdir(tmp_path)
+
+    async def fake_gen(requirement, llm_factory=None):
+        return _fake_model()
+
+    _patch_chain(monkeypatch, fake_gen)
+    from app.renderers.diagram_renderer import RenderStatus
+    from app.storage.generated_files import save_bytes_atomic
+
+    class _Result:
+        status = RenderStatus.RENDERED
+        format = "png"
+
+        def __init__(self):
+            name = save_bytes_atomic("uml", "png", b"\x89PNG fake")
+            self.path = str(tmp_path / "outputs" / "uml" / name)
+
+    import app.api.uml as uml_api
+
+    monkeypatch.setattr(uml_api, "render_plantuml_source", lambda src, fmt: _Result())
+    resp = client.post("/v1/uml/usecase", json={"requirement": "学生发布商品"})
+    assert resp.status_code == 200
+    render_info = resp.json()["render"]
+    assert render_info["status"] == "rendered"
+    assert render_info["download_url"].endswith(".png")
+    dl = client.get(render_info["download_url"])
+    assert dl.status_code == 200
+    assert dl.headers["content-type"].startswith("image/")
+
+
+def test_render_field_source_only_when_env_missing(monkeypatch, tmp_path):
+    """渲染环境缺失：仍 200，source_only，plantuml 照常返回。"""
+    monkeypatch.chdir(tmp_path)
+    from app.config.settings import get_settings
+
+    monkeypatch.setattr(get_settings(), "plantuml_jar_path", str(tmp_path / "nope.jar"))
+
+    async def fake_gen(requirement, llm_factory=None):
+        return _fake_model()
+
+    _patch_chain(monkeypatch, fake_gen)
+    resp = client.post("/v1/uml/usecase", json={"requirement": "学生发布商品"})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["render"]["status"] == "source_only"
+    assert body["render"]["download_url"] is None
+    assert body["plantuml"].startswith("@startuml")
+
+
+def test_render_disabled_returns_source_only(monkeypatch, tmp_path):
+    """请求 render=false 时不渲染（即使环境可用）。"""
+    monkeypatch.chdir(tmp_path)
+
+    async def fake_gen(requirement, llm_factory=None):
+        return _fake_model()
+
+    _patch_chain(monkeypatch, fake_gen)
+    resp = client.post("/v1/uml/usecase", json={"requirement": "学生发布商品", "render": False})
+    assert resp.status_code == 200
+    assert resp.json()["render"]["status"] == "source_only"
+
+
+def test_uml_download_rejects_bad_names():
+    """下载接口：非法文件名/穿越一律 404。"""
+    for bad in ["../../.env", "x.png", "..%2F..%2F.env"]:
+        assert client.get(f"/files/uml/{bad}").status_code in (404, 400)

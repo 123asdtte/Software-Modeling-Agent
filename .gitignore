@@ -31,3 +31,6 @@ Thumbs.db
 
 # 生成产物（PPT/教案，可重建）
 outputs/
+
+# PlantUML 本地 jar（二进制，手工放置，不进 Git）
+tools/*.jar
