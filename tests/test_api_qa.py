@@ -97,9 +97,7 @@ def test_qa_respects_concurrency_limit(monkeypatch):
     async def run():
         transport = httpx.ASGITransport(app=app)
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as ac:
-            responses = await asyncio.gather(
-                *[ac.post("/v1/qa", json={"question": "并发测试"}) for _ in range(3)]
-            )
+            responses = await asyncio.gather(*[ac.post("/v1/qa", json={"question": "并发测试"}) for _ in range(3)])
         assert all(r.status_code == 200 for r in responses)
 
     asyncio.run(run())

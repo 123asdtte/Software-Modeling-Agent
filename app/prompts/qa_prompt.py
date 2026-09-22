@@ -29,9 +29,5 @@ def build_qa_prompt(question: str, context: str) -> list[tuple[str, str]]:
     Returns:
         list[tuple[str, str]]: (role, content) 消息列表。
     """
-    user_content = (
-        f"【检索到的教材上下文】\n{context}\n\n"
-        f"【学生提问】\n{question}\n\n"
-        "请按四段式回答："
-    )
+    user_content = f"【检索到的教材上下文】\n{context}\n\n【学生提问】\n{question}\n\n请按四段式回答："
     return [("system", SYSTEM_PROMPT), ("user", user_content)]

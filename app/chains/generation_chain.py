@@ -37,6 +37,7 @@ _JSON_RE = re.compile(r"\{.*\}", re.DOTALL)
 
 # ---------------- 输出模型 ----------------
 
+
 class OutlineSection(BaseModel):
     """大纲的一个部分（7 要素之一）。"""
 
@@ -118,6 +119,7 @@ class LessonPlan(BaseModel):
 
 # ---------------- JSON 提取与校验 ----------------
 
+
 def extract_json(text: str) -> dict:
     """从模型输出中提取 JSON 对象（容忍 markdown 围栏与前后杂文）。"""
     # 优先剥 ```json 围栏；没有围栏则取首个平衡大括号块
@@ -144,9 +146,7 @@ def _invoke_json(messages, model_cls: type[T], retries: int = 1) -> T:
             return model_cls.model_validate(extract_json(raw))
         except (ValueError, json.JSONDecodeError, ValidationError) as exc:
             last_error = exc
-            feedback = [
-                ("user", "上次输出解析失败：" + str(exc)[:300] + "。请重新严格只输出符合要求的 JSON。")
-            ]
+            feedback = [("user", "上次输出解析失败：" + str(exc)[:300] + "。请重新严格只输出符合要求的 JSON。")]
             logger.warning("第 %d 次 JSON 解析/校验失败（%s）：%s", attempt + 1, model_cls.__name__, str(exc)[:120])
         except Exception as exc:  # noqa: BLE001 - API 层失败同样重试（平台偶发 5xx/网关超时）
             last_error = exc
@@ -156,6 +156,7 @@ def _invoke_json(messages, model_cls: type[T], retries: int = 1) -> T:
 
 
 # ---------------- PPT 生成 ----------------
+
 
 @lru_cache(maxsize=1)
 def _gen_semaphore() -> asyncio.Semaphore:
@@ -173,8 +174,10 @@ def generate_ppt_outline(topic: str, minutes: int = 90) -> PptOutline:
 async def _generate_section_pages(topic: str, section: OutlineSection) -> list[SlidePage]:
     """单个 section 的分页生成（并发闸门内）。"""
     user = PPT_SECTION_USER_TMPL.format(
-        section=section.name, page_count=section.page_count,
-        topic=topic, points="；".join(section.points) or "（按大纲自行展开）",
+        section=section.name,
+        page_count=section.page_count,
+        topic=topic,
+        points="；".join(section.points) or "（按大纲自行展开）",
     )
     messages = [("system", PPT_SYSTEM_PROMPT), ("user", user)]
     async with _gen_semaphore():
@@ -189,9 +192,7 @@ async def generate_ppt_deck_async(topic: str, minutes: int = 90) -> dict:
         dict: {"outline": 大纲 dict, "pages": [页 dict]}；页按节顺序拼接。
     """
     outline = await asyncio.to_thread(generate_ppt_outline, topic, minutes)
-    results = await asyncio.gather(
-        *(_generate_section_pages(topic, s) for s in outline.sections)
-    )
+    results = await asyncio.gather(*(_generate_section_pages(topic, s) for s in outline.sections))
     pages = [page.model_dump() for section_pages in results for page in section_pages]
     return {"outline": outline.model_dump(), "pages": pages}
 

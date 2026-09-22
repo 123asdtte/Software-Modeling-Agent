@@ -1,0 +1,24 @@
+[project]
+# 最小元数据：依赖清单唯一来源仍是 requirements.txt（避免双源漂移）
+name = "ai-education-agent"
+version = "0.1.0"
+description = "AI 教学智能体平台 v13（QA / PPT / 教案 / UML 多智能体）"
+requires-python = ">=3.11"
+
+[tool.ruff]
+# 与项目 venv 实际运行版本（3.14）一致
+target-version = "py314"
+# 120：现有中文注释/日志行较长，100 会产生 21 处超长报警；
+# 120 为常见工程实践，避免为行宽大范围改动业务代码
+line-length = 120
+
+[tool.ruff.lint]
+# E/F 常见错误、I 导入排序、B bug 风险、SIM 可简化写法
+select = ["E", "F", "I", "B", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+# scripts 通过 sys.path.insert 注入项目根后再 import，E402 是刻意行为
+"scripts/*" = ["E402"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -30,7 +30,7 @@ FAKE_LESSON = {
 
 def test_extract_json_strips_fence():
     """应剥离 markdown 围栏取 JSON。"""
-    text = "前置说明\n```json\n{\"a\": 1}\n```\n后置说明"
+    text = '前置说明\n```json\n{"a": 1}\n```\n后置说明'
     assert extract_json(text) == {"a": 1}
 
 

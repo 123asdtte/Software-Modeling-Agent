@@ -63,21 +63,23 @@ def test_lesson_endpoint_ok(monkeypatch, tmp_path):
 
     from app.chains import generation_chain
 
-    fake_lesson = generation_chain.LessonPlan.model_validate({
-        "course_name": "用例图教学设计",
-        "teaching_goals": {"knowledge": ["k"], "ability": ["a"], "literacy": ["l"]},
-        "key_points": ["p"],
-        "difficult_points": ["d"],
-        "teaching_flow": [
-            {"stage": "导入", "minutes": 5, "teacher_activity": "t", "student_activity": "s"},
-            {"stage": "讲解", "minutes": 15, "teacher_activity": "t", "student_activity": "s"},
-            {"stage": "案例", "minutes": 10, "teacher_activity": "t", "student_activity": "s"},
-            {"stage": "互动", "minutes": 8, "teacher_activity": "t", "student_activity": "s"},
-            {"stage": "小结", "minutes": 7, "teacher_activity": "t", "student_activity": "s"},
-        ],
-        "class_exercises": ["e1", "e2"],
-        "homework": ["h1", "h2"],
-    })
+    fake_lesson = generation_chain.LessonPlan.model_validate(
+        {
+            "course_name": "用例图教学设计",
+            "teaching_goals": {"knowledge": ["k"], "ability": ["a"], "literacy": ["l"]},
+            "key_points": ["p"],
+            "difficult_points": ["d"],
+            "teaching_flow": [
+                {"stage": "导入", "minutes": 5, "teacher_activity": "t", "student_activity": "s"},
+                {"stage": "讲解", "minutes": 15, "teacher_activity": "t", "student_activity": "s"},
+                {"stage": "案例", "minutes": 10, "teacher_activity": "t", "student_activity": "s"},
+                {"stage": "互动", "minutes": 8, "teacher_activity": "t", "student_activity": "s"},
+                {"stage": "小结", "minutes": 7, "teacher_activity": "t", "student_activity": "s"},
+            ],
+            "class_exercises": ["e1", "e2"],
+            "homework": ["h1", "h2"],
+        }
+    )
 
     def fake_lesson_gen(topic, minutes=45):
         return fake_lesson

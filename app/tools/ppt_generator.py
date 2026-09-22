@@ -28,9 +28,7 @@ def _set_font(text_frame, size: Pt) -> None:
             run.font.size = size
             # python-pptx 不直接暴露 ea 字体，需设置 rPr 的 eastAsia
             r_pr = run._r.get_or_add_rPr()
-            ea = r_pr.find(
-                "{http://schemas.openxmlformats.org/drawingml/2006/main}ea"
-            )
+            ea = r_pr.find("{http://schemas.openxmlformats.org/drawingml/2006/main}ea")
             if ea is None:
                 ea = r_pr.makeelement(
                     "{http://schemas.openxmlformats.org/drawingml/2006/main}ea",

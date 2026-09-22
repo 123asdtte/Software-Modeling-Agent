@@ -1,8 +1,6 @@
 """通过 git credential 的 GitHub token 创建 issue（凭据不落盘、不回显）。"""
 
-import json
 import subprocess
-import sys
 
 REPO = "123asdtte/Software-Modeling-Agent"
 

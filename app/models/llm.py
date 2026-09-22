@@ -30,9 +30,7 @@ def get_llm(timeout: float | None = None) -> ChatOpenAI:
     """
     settings = get_settings()
     if not settings.deepseek_api_key:
-        raise ValueError(
-            "未配置 DEEPSEEK_API_KEY，请复制 .env.example 为 .env 并填写密钥。"
-        )
+        raise ValueError("未配置 DEEPSEEK_API_KEY，请复制 .env.example 为 .env 并填写密钥。")
     return ChatOpenAI(
         model=settings.model_name,
         api_key=settings.deepseek_api_key,

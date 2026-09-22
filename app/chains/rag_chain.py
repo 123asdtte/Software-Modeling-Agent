@@ -35,9 +35,7 @@ _rag_ready = False
 def get_rag() -> LightRAG:
     """加载已构建的知识库索引（未构建时抛错提示）。"""
     if not INDEX_DIR.is_dir():
-        raise FileNotFoundError(
-            "知识库索引不存在，请先执行：python -m app.knowledge_base.build"
-        )
+        raise FileNotFoundError("知识库索引不存在，请先执行：python -m app.knowledge_base.build")
     return LightRAG(
         working_dir=str(INDEX_DIR),
         embedding_func=get_embedding_func(),

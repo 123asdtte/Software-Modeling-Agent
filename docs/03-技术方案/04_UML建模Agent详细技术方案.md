@@ -25,8 +25,8 @@ UML Agent
 
 ```python
 class DiagramType(str, Enum):
-    USECASE = "usecase"      # 用例图
-    ACTIVITY = "activity"    # 活动图
+    USECASE = "usecase"  # 用例图
+    ACTIVITY = "activity"  # 活动图
     STATEMACHINE = "statemachine"  # 状态机图
 ```
 

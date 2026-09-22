@@ -39,6 +39,7 @@ def _outputs_path(kind: str, filename: str) -> Path:
         raise HTTPException(status_code=404, detail="文件不存在或已过期")
     return path
 
+
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
@@ -110,14 +111,10 @@ async def qa(req: QARequest) -> QAResponse:
     """
     try:
         async with _qa_semaphore:
-            result = await asyncio.wait_for(
-                build_qa_answer(req.question), timeout=settings.qa_timeout
-            )
+            result = await asyncio.wait_for(build_qa_answer(req.question), timeout=settings.qa_timeout)
     except asyncio.TimeoutError as exc:
         logger.warning("教材问答超时（>%ss）：%s", settings.qa_timeout, req.question[:50])
-        raise HTTPException(
-            status_code=504, detail=f"问答超时（>{settings.qa_timeout:.0f}s），请稍后重试"
-        ) from exc
+        raise HTTPException(status_code=504, detail=f"问答超时（>{settings.qa_timeout:.0f}s），请稍后重试") from exc
     except FileNotFoundError as exc:
         logger.warning("知识库索引未构建：%s", exc)
         raise HTTPException(status_code=503, detail=str(exc)) from exc
@@ -128,6 +125,7 @@ async def qa(req: QARequest) -> QAResponse:
 
 
 # ---------------- 教学资源生成（M3：PPT / 教案）----------------
+
 
 class PptRequest(BaseModel):
     """PPT 生成请求体（PRD：课题 + 课时）。"""
@@ -160,9 +158,7 @@ async def generate_ppt(req: PptRequest) -> dict:
             )
     except asyncio.TimeoutError as exc:
         logger.warning("PPT 生成超时（>%ss）：%s", settings.gen_timeout, req.topic)
-        raise HTTPException(
-            status_code=504, detail=f"生成超时（>{settings.gen_timeout:.0f}s），请稍后重试"
-        ) from exc
+        raise HTTPException(status_code=504, detail=f"生成超时（>{settings.gen_timeout:.0f}s），请稍后重试") from exc
     except HTTPException:
         raise
     except Exception as exc:
@@ -195,9 +191,7 @@ async def generate_lesson(req: LessonRequest) -> dict:
             )
     except asyncio.TimeoutError as exc:
         logger.warning("教案生成超时（>%ss）：%s", settings.gen_timeout, req.topic)
-        raise HTTPException(
-            status_code=504, detail=f"生成超时（>{settings.gen_timeout:.0f}s），请稍后重试"
-        ) from exc
+        raise HTTPException(status_code=504, detail=f"生成超时（>{settings.gen_timeout:.0f}s），请稍后重试") from exc
     except HTTPException:
         raise
     except Exception as exc:

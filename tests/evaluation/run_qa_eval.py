@@ -35,8 +35,18 @@ CITATION_REQUIRED_TYPES = {"standard", "colloquial", "typo", "compare", "howto",
 # 用模态词而非"模态词+动词"穷举：拒答题的表述组合不可穷尽（glm 每次措辞都变），
 # 在 expect_refusal 语境下匹配模态词本身即足够安全。
 _REFUSAL_KEYWORDS = (
-    "不能", "无法", "不会", "拒绝", "暂无", "不在教材",
-    "不在当前教材", "知识库中未", "知识库中没有", "没有相关", "未包含", "不应",
+    "不能",
+    "无法",
+    "不会",
+    "拒绝",
+    "暂无",
+    "不在教材",
+    "不在当前教材",
+    "知识库中未",
+    "知识库中没有",
+    "没有相关",
+    "未包含",
+    "不应",
 )
 
 _REQUIRED_SECTIONS = ("概念解释", "通俗案例", "教材关联", "实践建议")
@@ -102,8 +112,10 @@ async def run_case(case: dict) -> dict:
     except Exception as exc:  # noqa: BLE001 - 评测单条失败不中断整体
         result.update(sources=[], reply="", latency_s=round(time.time() - t0, 1), error=str(exc)[:200])
         result.update(
-            retrieval_hit=False, refusal_correct=False,
-            sections_complete=False, citation_traceable=False,
+            retrieval_hit=False,
+            refusal_correct=False,
+            sections_complete=False,
+            citation_traceable=False,
         )
         return result
 
@@ -136,7 +148,10 @@ def summarize(results: list[dict], cases: list[dict]) -> dict:
         "by_type": {
             t: {
                 "n": sum(1 for r in results if r["type"] == t),
-                "retrieval_hit": rate([r for r in results if r["type"] == t and r["type"] in CITATION_REQUIRED_TYPES], "retrieval_hit"),
+                "retrieval_hit": rate(
+                    [r for r in results if r["type"] == t and r["type"] in CITATION_REQUIRED_TYPES],
+                    "retrieval_hit",
+                ),
                 "refusal_correct": rate([r for r in results if r["type"] == t], "refusal_correct"),
             }
             for t in sorted({r["type"] for r in results})
