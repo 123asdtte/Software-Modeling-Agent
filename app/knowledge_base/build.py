@@ -4,7 +4,7 @@
     python -m app.knowledge_base.build          # 全量重建
     python -m app.knowledge_base.build --force  # 强制重建（清空旧索引）
 
-首批入库：`02-需求文档PRD/_教材源稿提取/` 下的 4 份教材源稿。
+首批入库：`docs/02-需求文档PRD/_教材源稿提取/` 下的 4 份教材源稿。
 """
 
 import argparse
@@ -23,9 +23,11 @@ from app.tools.document_reader import DocumentChunk, parse_markdown_dir
 
 logger = logging.getLogger(__name__)
 
-# 教材源稿目录（文档体系内）
+# 教材源稿目录（文档体系已随仓库迁移到 docs/ 下；源稿内容在 .gitignore 中排除，
+# 仅保留在本地，换机器时需手工补齐该目录）
 DEFAULT_SOURCE_DIR = (
-    Path(__file__).resolve().parent.parent.parent.parent
+    Path(__file__).resolve().parent.parent.parent
+    / "docs"
     / "02-需求文档PRD"
     / "_教材源稿提取"
 )
