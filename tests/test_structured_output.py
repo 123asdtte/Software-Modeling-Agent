@@ -129,3 +129,18 @@ def test_invoke_validation_failure_counts_as_retry():
     out = invoke_structured([("user", "x")], _Out, llm_factory=_factory(llm))
     assert out.count == 3
     assert llm.calls == 2
+
+
+def test_error_message_carries_last_error_for_logs_only():
+    """契约固化：异常文本含底层异常细节（API 层 5xx 时可含上游地址），仅供
+    服务端日志定位；HTTP API 层不得把该字符串直接作为客户端响应。"""
+    url = "https://internal.upstream.example/v1"
+
+    class _AlwaysFail:
+        def invoke(self, messages):
+            raise RuntimeError(f"504 Gateway Time-out at {url}")
+
+    with pytest.raises(StructuredOutputError) as ei:
+        invoke_structured([("user", "x")], _Out, llm_factory=lambda timeout=None: _AlwaysFail())
+    assert url in str(ei.value)  # 日志可定位
+    assert ei.value.last_error is not None  # 调用方可取原始异常写日志

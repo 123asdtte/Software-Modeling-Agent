@@ -4,16 +4,20 @@ PPT / 教案 / UML 共用这一套，避免各链路复制解析与重试逻辑�
 
 设计约束：
 - 不在 import 阶段调用 LLM（工厂延迟到调用时解析）；
-- 可注入 Fake LLM 便于测试（llm_factory 参数）；
+- 可注入 Fake LLM 便于测试（llm_factory 参数，见 LLMFactory 协议）；
 - 重试覆盖两层失败：API 层（平台偶发 5xx/超时）与结构层（JSON/校验）；
 - 统一抛 StructuredOutputError，不向调用方泄露原始异常类型差异；
 - 不使用 eval/exec。
+
+⚠️ 安全约定：StructuredOutputError 的字符串包含最后一次底层异常文本
+（可能含上游地址/供应商错误详情），**仅用于日志与服务端排查**；
+HTTP API 层不得把该异常字符串直接作为客户端响应，应映射为固定错误码。
 """
 
 import json
 import logging
 import re
-from typing import Callable, TypeVar
+from typing import Protocol, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
@@ -25,8 +29,29 @@ T = TypeVar("T", bound=BaseModel)
 _FENCED_RE = re.compile(r"```(?:json)?\s*(\{.*?\})\s*```", re.DOTALL)
 
 
+class LLMResponse(Protocol):
+    """最小 LLM 响应协议（langchain AIMessage 与测试 Fake 均满足）。"""
+
+    content: str
+
+
+class LLMClient(Protocol):
+    """最小 LLM 客户端协议。"""
+
+    def invoke(self, messages: list) -> LLMResponse: ...
+
+
+class LLMFactory(Protocol):
+    """LLM 工厂协议：可选 timeout 参数，返回客户端实例。"""
+
+    def __call__(self, timeout: float | None = None) -> LLMClient: ...
+
+
 class StructuredOutputError(RuntimeError):
-    """结构化输出最终失败（重试耗尽）：携带模型类名与最后一次错误。"""
+    """结构化输出最终失败（重试耗尽）：携带模型类名与最后一次错误。
+
+    ⚠️ 异常文本含底层异常细节，仅限服务端日志使用，见模块 docstring 安全约定。
+    """
 
     def __init__(self, model_name: str, last_error: Exception, attempts: int) -> None:
         self.model_name = model_name
@@ -86,7 +111,7 @@ def invoke_structured(
     messages: list,
     model_cls: type[T],
     *,
-    llm_factory: Callable[..., object] | None = None,
+    llm_factory: LLMFactory | None = None,
     retries: int = 1,
     timeout: float | None = None,
     feedback_on_parse_error: bool = True,
@@ -125,7 +150,7 @@ def invoke_structured(
     raise StructuredOutputError(model_cls.__name__, last_error or ValueError("未知错误"), attempts)
 
 
-def _accepts_timeout(factory: Callable) -> bool:
+def _accepts_timeout(factory: LLMFactory) -> bool:
     """判断工厂是否接受 timeout 关键字（Fake 工厂可能只有无参签名）。"""
     import inspect
 
