@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 教学智能体平台 - 教材智能问答</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <main class="main-content" id="main-container">
+    <div class="qa-container">
+      <!-- Top Input Card -->
+      <div class="card" id="qa-input-card">
+        <div class="card-header">
+          <div>
+            <h1 class="card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
+              教材知识库智能答疑（RAG）
+            </h1>
+            <p class="card-subtitle">基于权威教材知识库深度检索，严格输出【概念解释·通俗案例·教材关联·任务定位】四段式精准答疑</p>
+          </div>
+          <span class="badge badge-info" style="font-weight: 500;">知识库已挂载</span>
+        </div>
+
+        <!-- Example Chips -->
+        <div class="chips-container" style="margin-top: 0; margin-bottom: 14px;">
+          <span class="chips-label">🎯 典型教学疑问：</span>
+          <button type="button" class="chip-item" data-question="什么是用例图？">什么是用例图？</button>
+          <button type="button" class="chip-item" data-question="include 和 extend 怎么区分？">include 和 extend 怎么区分？</button>
+          <button type="button" class="chip-item" data-question="活动图里泳道的作用是什么？">活动图里泳道的作用是什么？</button>
+          <button type="button" class="chip-item" data-question="帮我看看这段需求该怎么建模">帮我看看这段需求该怎么建模</button>
+        </div>
+
+        <!-- Input Box -->
+        <div style="display: flex; gap: 8px;">
+          <input
+            type="text"
+            id="qa-input"
+            class="form-input"
+            placeholder="输入关于软件建模概念、语法规则或教学设计难点的疑问（按 Enter 提问）…"
+            maxlength="1000"
+          />
+          <button id="qa-submit-btn" class="btn btn-primary" style="flex-shrink: 0;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+            提问
+          </button>
+        </div>
+        <div class="form-error-msg" id="qa-input-error" style="display: none;">请输入有效的问题内容</div>
+      </div>
+
+      <!-- Error Alert Bar -->
+      <div id="qa-error-bar" class="alert-bar alert-error" style="display: none;"></div>
+
+      <!-- Conversation Chat Stream -->
+      <div class="chat-stream" id="chat-stream">
+        <!-- Initial Welcome Message -->
+        <div class="chat-card-assistant">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--color-border-subtle);">
+            <div style="width: 24px; height: 24px; border-radius: 4px; background: var(--color-primary-light); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700;">AI</div>
+            <span style="font-weight: 600; font-size: 13px;">教材答疑智能体</span>
+            <span style="font-size: 11px; color: var(--color-text-secondary); margin-left: auto;">软件建模课程知识库</span>
+          </div>
+          <div class="chat-reply-body">
+            <p class="chat-reply-paragraph">
+              老师您好！我是软件建模课程教学助手。您可以向我提问关于 <strong>UML 建模规范、用例图设计、活动图泳道、类图设计原则</strong> 等专业知识点。所有回复均遵循高职教学大纲，提供四段式系统解答并精准引用教材来源。
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/qa.js"></script>
+</body>
+</html>

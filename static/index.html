@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 教学智能体平台 - 首页</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <main class="main-content" id="main-container">
+    <!-- Hero Banner with Technical Blueprint Styling -->
+    <section class="hero-banner" id="hero-section">
+      <div class="hero-tag">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="m9 12 2 2 4-4"></path>
+        </svg>
+        高职软件工程建模课程专用 · 教学规范与大纲对齐
+      </div>
+      <h1 class="hero-title" id="hero-title">面向软件建模课程的 AI 教学智能体平台</h1>
+      <p class="hero-subtitle" id="hero-subtitle">
+        集教材智能问答（RAG）、UML 用例图实时生成与规则质检、PPT 课件与高职规范教案一键导出于一体的工程化教学助手。
+      </p>
+      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <a href="uml.html" class="btn btn-primary" id="hero-cta-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+          立即体验 UML 建模与质检
+        </a>
+        <a href="qa.html" class="btn btn-secondary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          查阅教材知识库
+        </a>
+      </div>
+    </section>
+
+    <!-- 4 Capability Cards (2x2 Grid) -->
+    <section class="cards-grid-2x2" id="capabilities-grid">
+      <!-- Card 1: UML Modeling -->
+      <a href="uml.html" class="ability-card" id="card-uml">
+        <div>
+          <div class="ability-card-header">
+            <div class="ability-card-icon-wrap">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+            </div>
+            <span class="badge badge-primary">核心实训</span>
+          </div>
+          <h2 class="ability-card-title">UML 智能建模与规范质检</h2>
+          <p class="ability-card-desc">
+            自然语言输入需求，一键输出结构化用例模型、PlantUML 源码与 PNG/SVG 高清图，内置 4 维度规范质检报告与教学修改建议。
+          </p>
+        </div>
+        <div class="ability-card-footer">
+          <span>进入建模工作台</span>
+          <span>→</span>
+        </div>
+      </a>
+
+      <!-- Card 2: QA -->
+      <a href="qa.html" class="ability-card" id="card-qa">
+        <div>
+          <div class="ability-card-header">
+            <div class="ability-card-icon-wrap">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
+            </div>
+            <span class="badge badge-info">课前预习</span>
+          </div>
+          <h2 class="ability-card-title">教材智能问答（RAG）</h2>
+          <p class="ability-card-desc">
+            基于软件建模教材知识库检索，输出【概念解释·通俗案例·教材关联·任务定位】四段式严谨答疑，并精确标注引用文件与段落来源。
+          </p>
+        </div>
+        <div class="ability-card-footer">
+          <span>进入智能问答</span>
+          <span>→</span>
+        </div>
+      </a>
+
+      <!-- Card 3: PPT Generation -->
+      <a href="resources.html?tab=ppt" class="ability-card" id="card-ppt">
+        <div>
+          <div class="ability-card-header">
+            <div class="ability-card-icon-wrap">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+            </div>
+            <span class="badge badge-warning">备课提效</span>
+          </div>
+          <h2 class="ability-card-title">PPT 课件大纲与生成</h2>
+          <p class="ability-card-desc">
+            根据课程主题与分钟时长智能规划课程大纲结构与逐页幻灯片内容，附带讲授重点提示与一键导出 .pptx 格式课件文件。
+          </p>
+        </div>
+        <div class="ability-card-footer">
+          <span>进入课件生成</span>
+          <span>→</span>
+        </div>
+      </a>
+
+      <!-- Card 4: Lesson Generation -->
+      <a href="resources.html?tab=lesson" class="ability-card" id="card-lesson">
+        <div>
+          <div class="ability-card-header">
+            <div class="ability-card-icon-wrap">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+            </div>
+            <span class="badge badge-success">教学设计</span>
+          </div>
+          <h2 class="ability-card-title">高职标准规范教案生成</h2>
+          <p class="ability-card-desc">
+            全自动生成知识/能力/素养三维目标、重点难点剖析、四环节师生交互时序流程表及课堂练习，提供 .docx 教学设计文档下载。
+          </p>
+        </div>
+        <div class="ability-card-footer">
+          <span>进入教案生成</span>
+          <span>→</span>
+        </div>
+      </a>
+    </section>
+
+    <!-- Bottom Notice Banner -->
+    <div style="margin-top: 32px; text-align: center; color: var(--color-text-muted); font-size: 12px;">
+      💡 提示：所有 AI 生成成果仅供授课教师与学生实训参考，使用前请结合实际学情与大纲进行教学审核。
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/layout.js"></script>
+</body>
+</html>

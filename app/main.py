@@ -10,11 +10,12 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from app.api.uml import router as uml_router
 from app.chains.rag_chain import build_qa_answer
-from app.config.settings import get_settings
+from app.config.settings import get_settings, resolve_project_path
 from app.models.llm import get_llm
 from app.storage.generated_files import resolve_download_path  # 下载白名单解析（防穿越）
 
@@ -43,6 +44,16 @@ app = FastAPI(
 
 # M4 起：新功能路由独立成包（评审 P0），main.py 只负责注册
 app.include_router(uml_router)
+
+# M5：前端静态页面（static/ 目录，见 docs/03-技术方案/05_前端页面设计文档.md）
+_STATIC_DIR = resolve_project_path("static")
+app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
+
+
+@app.get("/", include_in_schema=False)
+async def index() -> FileResponse:
+    """前端入口页（Demo 首页）。"""
+    return FileResponse(_STATIC_DIR / "index.html")
 
 
 class ChatRequest(BaseModel):

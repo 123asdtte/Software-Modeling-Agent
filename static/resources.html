@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 教学智能体平台 - 课件与教案生成</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <main class="main-content" id="main-container">
+    <!-- Sub Navigation Tabs (Underline Style with Icons) -->
+    <div class="subnav-tabs" id="resource-tabs">
+      <button type="button" class="subnav-tab-btn active" id="tab-btn-ppt" data-target="panel-ppt" style="display: inline-flex; align-items: center; gap: 6px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+          <line x1="8" y1="21" x2="16" y2="21"></line>
+          <line x1="12" y1="17" x2="12" y2="21"></line>
+        </svg>
+        PPT 课件大纲与生成
+      </button>
+      <button type="button" class="subnav-tab-btn" id="tab-btn-lesson" data-target="panel-lesson" style="display: inline-flex; align-items: center; gap: 6px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+        </svg>
+        高职规范教案生成
+      </button>
+    </div>
+
+    <!-- Error Alert Bar -->
+    <div id="resources-error-bar" class="alert-bar alert-error" style="display: none;"></div>
+
+    <!-- Skeleton Loading Box -->
+    <div id="resources-skeleton-box" class="skeleton-box" style="display: none; margin-bottom: 24px;">
+      <div style="font-size: 13px; color: var(--color-text-secondary); margin-bottom: 12px;">AI 教学智能体正在构建课程章节结构与排版内容…（约需 30~60 秒）</div>
+      <div class="skeleton-line short"></div>
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line medium"></div>
+      <div class="skeleton-line"></div>
+    </div>
+
+    <!-- TAB 1: PPT PANEL -->
+    <div id="panel-ppt" class="resource-panel">
+      <!-- Input Form Card -->
+      <div class="card" id="ppt-form-card">
+        <div class="card-header">
+          <div>
+            <h1 class="card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+              PPT 课件大纲与内容生成
+            </h1>
+            <p class="card-subtitle">输入课程课题与教学总时长，自动规划知识递进大纲、分页幻灯片要点及授课指导建议</p>
+          </div>
+          <span class="badge badge-warning">支持 .pptx 导出</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="ppt-topic" class="form-label">课程课题名称</label>
+            <input
+              type="text"
+              id="ppt-topic"
+              class="form-input"
+              placeholder="例：软件工程 UML 建模入门"
+              value="软件工程 UML 建模"
+              maxlength="100"
+            />
+            <div class="form-error-msg" id="ppt-topic-error" style="display: none;">请输入有效的主题（2~100 字）</div>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="ppt-minutes" class="form-label">教学总课时（分钟）</label>
+            <input
+              type="number"
+              id="ppt-minutes"
+              class="form-input"
+              value="90"
+              min="15"
+              max="240"
+              step="5"
+            />
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end;">
+          <button id="generate-ppt-btn" class="btn btn-primary">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+              <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
+            生成 PPT 课件
+          </button>
+        </div>
+      </div>
+
+      <!-- PPT Results Area -->
+      <div id="ppt-result-section" style="display: none;" class="fade-in">
+        <!-- Title Row Card -->
+        <div class="card">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <h2 class="card-title" id="ppt-result-title" style="margin-bottom: 0;">-</h2>
+              <span class="badge badge-primary" id="ppt-pages-count-badge">共 0 页</span>
+            </div>
+            <a id="ppt-download-btn" href="#" download class="btn btn-primary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              下载 .pptx 课件
+            </a>
+          </div>
+        </div>
+
+        <!-- Outline Card -->
+        <div class="card">
+          <h3 class="card-title" style="margin-bottom: 14px;">📑 课程大纲章节结构</h3>
+          <div id="ppt-outline-container" class="outline-list"></div>
+        </div>
+
+        <!-- Pages Grid Card -->
+        <div class="card">
+          <h3 class="card-title" style="margin-bottom: 14px;">🖼️ 幻灯片逐页预览</h3>
+          <div id="ppt-pages-grid" class="ppt-pages-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: LESSON PANEL -->
+    <div id="panel-lesson" class="resource-panel" style="display: none;">
+      <!-- Input Form Card -->
+      <div class="card" id="lesson-form-card">
+        <div class="card-header">
+          <div>
+            <h1 class="card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+              高职标准规范教案生成
+            </h1>
+            <p class="card-subtitle">按高职教学标准自动构建 9 字段教学目标、重难点、四环节时序流程表与课后练习，支持 .docx 导出</p>
+          </div>
+          <span class="badge badge-success">支持 .docx 导出</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="lesson-topic" class="form-label">教案课题名称</label>
+            <input
+              type="text"
+              id="lesson-topic"
+              class="form-input"
+              placeholder="例：用例图教学设计"
+              value="用例图教学设计"
+              maxlength="100"
+            />
+            <div class="form-error-msg" id="lesson-topic-error" style="display: none;">请输入有效课题（2~100 字）</div>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="lesson-minutes" class="form-label">教学课时时长（分钟）</label>
+            <input
+              type="number"
+              id="lesson-minutes"
+              class="form-input"
+              value="45"
+              min="15"
+              max="240"
+              step="5"
+            />
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end;">
+          <button id="generate-lesson-btn" class="btn btn-primary">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+              <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
+            生成规范教案
+          </button>
+        </div>
+      </div>
+
+      <!-- Lesson Results Area -->
+      <div id="lesson-result-section" style="display: none;" class="fade-in">
+        <!-- Top Yellow Audit Notice Bar -->
+        <div class="alert-bar alert-warning" id="lesson-audit-notice">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span>AI 生成内容，请授课教师根据本班实际学情与教学大纲审核后使用</span>
+        </div>
+
+        <!-- Missing Fields Error Bar (if any) -->
+        <div class="alert-bar alert-error" id="lesson-missing-fields-bar" style="display: none;"></div>
+
+        <!-- Download & Course Title Card -->
+        <div class="card">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+            <h2 class="card-title" id="lesson-course-name" style="margin-bottom: 0;">课程教学设计方案</h2>
+            <a id="lesson-download-btn" href="#" download class="btn btn-primary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              下载 .docx 教案
+            </a>
+          </div>
+        </div>
+
+        <!-- Structured View Card -->
+        <div class="card">
+          <!-- 1. 教学目标 (三列卡片) -->
+          <h3 class="card-title" style="margin-bottom: 14px;">🎯 三维教学目标</h3>
+          <div class="goals-grid" id="lesson-goals-container">
+            <div class="goal-card">
+              <div class="goal-card-title">📖 知识目标</div>
+              <ul class="bullet-list" id="goal-knowledge-list" style="margin-bottom: 0;"></ul>
+            </div>
+            <div class="goal-card">
+              <div class="goal-card-title">🛠️ 能力目标</div>
+              <ul class="bullet-list" id="goal-ability-list" style="margin-bottom: 0;"></ul>
+            </div>
+            <div class="goal-card">
+              <div class="goal-card-title">🌟 素质目标</div>
+              <ul class="bullet-list" id="goal-literacy-list" style="margin-bottom: 0;"></ul>
+            </div>
+          </div>
+
+          <!-- 2. 重点与难点 -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+            <div class="goal-card">
+              <div class="goal-card-title">💡 教学重点</div>
+              <ul class="bullet-list" id="key-points-list" style="margin-bottom: 0;"></ul>
+            </div>
+            <div class="goal-card">
+              <div class="goal-card-title">🔍 教学难点</div>
+              <ul class="bullet-list" id="difficult-points-list" style="margin-bottom: 0;"></ul>
+            </div>
+          </div>
+
+          <!-- 3. 教学流程表 -->
+          <h3 class="card-title" style="margin-bottom: 10px;">⏳ 四环节教学流程设计</h3>
+          <div style="overflow-x: auto;">
+            <table class="flow-table" id="flow-table">
+              <thead>
+                <tr>
+                  <th style="width: 100px;">教学环节</th>
+                  <th style="width: 80px;">时间分配</th>
+                  <th>教师活动（讲授/启发/巡视）</th>
+                  <th>学生活动（讨论/上机/自检）</th>
+                </tr>
+              </thead>
+              <tbody id="flow-tbody"></tbody>
+            </table>
+          </div>
+
+          <!-- 4. 课堂练习与课后作业 -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px;">
+            <div class="goal-card">
+              <div class="goal-card-title">✍️ 随堂实训练习</div>
+              <ol class="bullet-list" id="exercises-list" style="padding-left: 20px; margin-bottom: 0;"></ol>
+            </div>
+            <div class="goal-card">
+              <div class="goal-card-title">📝 课后拓展任务</div>
+              <ol class="bullet-list" id="homework-list" style="padding-left: 20px; margin-bottom: 0;"></ol>
+            </div>
+          </div>
+        </div>
+
+        <!-- Markdown Source Preview Collapsible -->
+        <details class="code-details" id="lesson-markdown-details" style="margin-top: 24px;">
+          <summary style="display: flex; align-items: center; justify-content: space-between;">
+            <span>📄 教案 Markdown 全文源文本</span>
+            <span style="font-size: 12px; font-weight: normal; color: var(--color-text-secondary);">点击展开/折叠</span>
+          </summary>
+          <div class="code-details-body">
+            <pre class="code-block" id="lesson-markdown-block"></pre>
+          </div>
+        </details>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/resources.js"></script>
+</body>
+</html>

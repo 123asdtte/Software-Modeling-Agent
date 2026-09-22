@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 教学智能体平台 - UML 建模</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <main class="main-content" id="main-container">
+    <!-- Top Input Card -->
+    <div class="card" id="uml-input-card">
+      <div class="card-header">
+        <div>
+          <h1 class="card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            描述你的建模需求
+          </h1>
+          <p class="card-subtitle">输入一句话业务需求，智能生成 UML 用例图、规范质检报告与 PlantUML 源码</p>
+        </div>
+        <span class="badge badge-info" style="font-weight: 500;">按 Ctrl + ↵ 快速生成</span>
+      </div>
+
+      <div class="form-group">
+        <div class="textarea-wrapper">
+          <textarea
+            id="requirement-input"
+            class="form-textarea"
+            rows="5"
+            placeholder="例：学生可以发布商品，管理员审核商品，买家可以浏览商品并下单…"
+          ></textarea>
+          <button type="button" class="textarea-clear-btn" id="textarea-clear-btn" title="清空需求内容">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+            清空
+          </button>
+        </div>
+        <div class="char-counter" id="char-counter">0 / 3000</div>
+        <div class="form-error-msg" id="input-error-msg" style="display: none;">请先输入建模需求</div>
+      </div>
+
+      <!-- Example Chips -->
+      <div class="chips-container" id="examples-chips">
+        <span class="chips-label">🎯 快速填入实训案例：</span>
+        <button type="button" class="chip-item" data-example="学生可以发布闲置二手商品，买家可以按分类浏览商品并在线下单支付，管理员负责审核违规商品并处理订单争议。">校园二手交易系统</button>
+        <button type="button" class="chip-item" data-example="读者可以查询馆藏图书、借阅图书和归还图书；图书管理员负责办理借还登记并入库新书；系统自动发送超期催还提醒。">图书借阅系统</button>
+        <button type="button" class="chip-item" data-example="教师可以发布试卷和批改主观题，学生在线参加考试并提交答案，系统自动评分客观题，教务管理员导出考试统计报表。">在线考试评测系统</button>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--color-border-subtle);">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <label for="format-select" class="form-label" style="margin-bottom: 0;">渲染格式：</label>
+          <select id="format-select" class="form-select" style="width: 130px; height: 36px; padding: 4px 8px;">
+            <option value="png" selected>PNG 高清位图</option>
+            <option value="svg">SVG 矢量矢量图</option>
+            <option value="source_only">仅生成源码</option>
+          </select>
+        </div>
+        <button id="generate-uml-btn" class="btn btn-primary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+          生成用例图
+        </button>
+      </div>
+    </div>
+
+    <!-- Error Alert Bar (Hidden by default) -->
+    <div id="uml-error-bar" class="alert-bar alert-error" style="display: none;"></div>
+
+    <!-- Skeleton Loading Box (Hidden by default) -->
+    <div id="uml-skeleton-box" class="skeleton-box" style="display: none; margin-bottom: 24px;">
+      <div style="font-size: 13px; color: var(--color-text-secondary); margin-bottom: 12px;">AI 智能体正在解析业务边界、识别参与者与执行教学质检规则…</div>
+      <div class="skeleton-line short"></div>
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line medium"></div>
+      <div class="skeleton-line"></div>
+    </div>
+
+    <!-- Results Area (Hidden by default, shown on success) -->
+    <div id="uml-result-section" style="display: none;" class="fade-in">
+      <!-- 架构概览指标卡（KPI Banner） -->
+      <div class="uml-kpi-banner" id="uml-kpi-banner">
+        <div class="kpi-card" id="kpi-system-card">
+          <div class="kpi-icon-wrap kpi-icon-blue">🏛️</div>
+          <div class="kpi-content">
+            <span class="kpi-label">目标系统边界</span>
+            <span class="kpi-value" id="kpi-system-name">-</span>
+            <span class="kpi-subtext">System Boundary</span>
+          </div>
+        </div>
+        <div class="kpi-card" id="kpi-actors-card">
+          <div class="kpi-icon-wrap kpi-icon-purple">👤</div>
+          <div class="kpi-content">
+            <span class="kpi-label">识别参与者 (Actors)</span>
+            <span class="kpi-value" id="kpi-actors-count">0 位</span>
+            <span class="kpi-subtext" id="kpi-actors-detail">主/次角色解析</span>
+          </div>
+        </div>
+        <div class="kpi-card" id="kpi-usecases-card">
+          <div class="kpi-icon-wrap kpi-icon-green">📦</div>
+          <div class="kpi-content">
+            <span class="kpi-label">核心用例 (Use Cases)</span>
+            <span class="kpi-value" id="kpi-usecases-count">0 个</span>
+            <span class="kpi-subtext">单意图粒度建模</span>
+          </div>
+        </div>
+        <div class="kpi-card" id="kpi-score-card">
+          <div class="kpi-icon-wrap kpi-icon-emerald" id="kpi-score-icon">🛡️</div>
+          <div class="kpi-content">
+            <span class="kpi-label">规范达标率</span>
+            <span class="kpi-value" id="kpi-quality-score">100%</span>
+            <span class="kpi-subtext" id="kpi-quality-level">质检合格</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="uml-workbench-grid">
+        <!-- Left Column: Diagram Preview -->
+        <div class="card" id="uml-preview-card" style="margin-bottom: 0; display: flex; flex-direction: column;">
+          <div class="card-header">
+            <h2 class="card-title" id="preview-col-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+              用例模型画布
+            </h2>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <a id="download-btn" href="#" download class="btn btn-primary" style="display: none; padding: 6px 12px; font-size: 13px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                下载图片
+              </a>
+            </div>
+          </div>
+
+          <!-- Canvas wrapper with interactive viewport and floating toolbar -->
+          <div class="canvas-wrapper">
+            <div class="canvas-toolbar" id="canvas-toolbar" style="display: none;">
+              <button type="button" class="canvas-tool-btn" id="zoom-out-btn" title="缩小画布">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  <line x1="8" y1="11" x2="14" y2="11"></line>
+                </svg>
+              </button>
+              <span class="canvas-zoom-badge" id="zoom-badge">100%</span>
+              <button type="button" class="canvas-tool-btn" id="zoom-in-btn" title="放大画布">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  <line x1="11" y1="8" x2="11" y2="14"></line>
+                  <line x1="8" y1="11" x2="14" y2="11"></line>
+                </svg>
+              </button>
+              <button type="button" class="canvas-tool-btn" id="zoom-reset-btn" title="重置缩放 (100%)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                  <path d="M3 3v5h5"></path>
+                </svg>
+              </button>
+              <div style="width: 1px; height: 16px; background: var(--color-border); margin: 0 2px;"></div>
+              <button type="button" class="canvas-tool-btn" id="fullscreen-btn" title="全屏高清查看">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                </svg>
+              </button>
+            </div>
+
+            <!-- If rendered: shows image inside blueprint canvas -->
+            <div id="image-display-area" class="image-canvas-box" style="flex: 1;">
+              <div class="image-canvas-viewport" id="canvas-viewport">
+                <img id="uml-image" src="" alt="UML 用例图生成结果" style="display: none;" title="点击放大查看全屏">
+              </div>
+            </div>
+
+            <!-- If source_only: shows fallback notice box -->
+            <div id="source-only-box" class="source-only-notice card" style="display: none; background: var(--color-surface-subtle); margin-top: 16px;">
+              <p style="font-weight: 600; margin-bottom: 4px; color: var(--color-text);">当前为仅生成源码模式</p>
+              <p id="source-only-reason" style="font-size: 13px; color: var(--color-text-secondary);"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Review Report & Model Elements -->
+        <div class="card" id="uml-review-card" style="margin-bottom: 0;">
+          <div class="card-header" style="padding-bottom: 12px;">
+            <div class="uml-card-tabs" role="tablist">
+              <button type="button" class="uml-tab-btn active" id="tab-btn-review" role="tab" aria-selected="true">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+                规范质检报告
+              </button>
+              <button type="button" class="uml-tab-btn" id="tab-btn-elements" role="tab" aria-selected="false">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="12 2 2 7 12 12 22 7 12 2"></polyline>
+                  <polyline points="2 17 12 22 22 17"></polyline>
+                  <polyline points="2 12 12 17 22 12"></polyline>
+                </svg>
+                模型要素清单
+              </button>
+            </div>
+            <div id="review-badge-container"></div>
+          </div>
+
+          <!-- Tab View 1: Review Table View -->
+          <div id="view-review-report">
+            <div class="review-filter-bar">
+              <div class="review-level-pills">
+                <button type="button" class="filter-pill active" data-filter="all" id="filter-all-btn">全部 (<span id="count-all">0</span>)</button>
+                <button type="button" class="filter-pill" data-filter="error" id="filter-error-btn">错误 (<span id="count-error">0</span>)</button>
+                <button type="button" class="filter-pill" data-filter="warning" id="filter-warning-btn">警告 (<span id="count-warning">0</span>)</button>
+                <button type="button" class="filter-pill" data-filter="info" id="filter-info-btn">建议 (<span id="count-info">0</span>)</button>
+              </div>
+              <div class="review-search-wrap">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="review-search-input" class="review-search-input" placeholder="搜索规则或对象…" />
+              </div>
+            </div>
+
+            <div class="review-table-wrap">
+              <table class="review-table" id="issues-table">
+                <thead>
+                  <tr>
+                    <th style="width: 65px;">级别</th>
+                    <th style="width: 110px;">规则 / 分组</th>
+                    <th style="width: 90px;">目标对象</th>
+                    <th>说明与教学建议</th>
+                  </tr>
+                </thead>
+                <tbody id="issues-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tab View 2: Model Elements View -->
+          <div id="view-model-elements" style="display: none;" class="model-elements-box">
+            <div>
+              <div class="elements-section-header">
+                <span>👥 识别的参与者 (Actors)</span>
+                <span style="font-size: 11px; color: var(--color-text-secondary);" id="model-actors-count-text">共 0 位</span>
+              </div>
+              <div class="actors-chip-group" id="model-actors-container">
+                <!-- Rendered dynamically -->
+              </div>
+            </div>
+
+            <div>
+              <div class="elements-section-header">
+                <span>📦 用例业务清单 (Use Cases)</span>
+                <span style="font-size: 11px; color: var(--color-text-secondary);" id="model-usecases-count-text">共 0 个用例</span>
+              </div>
+              <div style="overflow-x: auto;">
+                <table class="usecase-element-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 75px;">用例 ID</th>
+                      <th style="width: 130px;">用例名称</th>
+                      <th style="width: 100px;">关联参与者</th>
+                      <th>业务目标 (Goal)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="model-usecases-tbody">
+                    <!-- Rendered dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Collapsible PlantUML Source Block -->
+      <details class="code-details" id="plantuml-details" style="margin-top: 24px;">
+        <summary style="display: flex; align-items: center; justify-content: space-between;">
+          <span>💻 PlantUML 源码 (model.puml)</span>
+          <span style="font-size: 12px; font-weight: normal; color: var(--color-text-secondary);">点击展开/折叠</span>
+        </summary>
+        <div class="code-details-body">
+          <div style="display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 8px;">
+            <button id="download-puml-btn" class="btn btn-secondary" style="font-size: 12px; padding: 4px 10px; background: #1e293b; color: #fff; border-color: #334155;" type="button">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              下载 .puml
+            </button>
+            <button id="copy-source-btn" class="btn btn-secondary" style="font-size: 12px; padding: 4px 10px; background: #334155; color: #fff; border-color: #475569;" type="button">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              复制源码
+            </button>
+          </div>
+          <pre class="code-block" id="plantuml-code"></pre>
+        </div>
+      </details>
+    </div>
+
+    <!-- 二次确认弹窗（防误触与参数核对） -->
+    <div id="uml-confirm-modal" class="modal-backdrop" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div class="modal-icon-wrap">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+            </div>
+            <h3 class="modal-title" id="confirm-modal-title">确认生成 UML 用例模型？</h3>
+          </div>
+          <button type="button" class="modal-close-btn" id="confirm-modal-close-btn" aria-label="关闭">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="confirm-preview-box">
+            <div class="confirm-preview-label">
+              <span>📝 需求内容摘要</span>
+              <span id="confirm-char-count" class="badge badge-info">0 字</span>
+            </div>
+            <div id="confirm-requirement-preview" class="confirm-preview-text"></div>
+          </div>
+          
+          <div class="confirm-meta-row">
+            <div class="confirm-meta-item">
+              <span class="confirm-meta-label">输出格式：</span>
+              <span id="confirm-format-badge" class="badge badge-primary">PNG 高清位图</span>
+            </div>
+            <div class="confirm-meta-item">
+              <span class="confirm-meta-label">规则质检：</span>
+              <span class="badge badge-success">4 维度全量质检</span>
+            </div>
+          </div>
+
+          <div class="alert-bar alert-info" style="margin-top: 14px; margin-bottom: 0; font-size: 12px; line-height: 1.5;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+            <span>点击确认后将启动后端大模型语义解析与 PlantUML 渲染引擎，预计耗时 30~60 秒，完成后将输出架构用例图与教学质检报告。</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="confirm-modal-cancel-btn">取消</button>
+          <button type="button" class="btn btn-primary" id="confirm-modal-submit-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+              <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
+            确认并开始生成
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 全屏沉浸式灯箱预览弹窗（Lightbox） -->
+    <div id="uml-lightbox-modal" class="uml-lightbox-modal" style="display: none;" role="dialog" aria-modal="true" aria-label="全屏预览用例图">
+      <div class="lightbox-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-weight: 600; font-size: 15px;" id="lightbox-title">UML 用例模型全屏查看</span>
+          <span class="badge badge-info" id="lightbox-format-badge">PNG 高清</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <a id="lightbox-download-link" href="#" download class="btn btn-primary" style="padding: 5px 12px; font-size: 12px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            下载原图
+          </a>
+          <button type="button" class="modal-close-btn" id="lightbox-close-btn" style="color: #fff;" aria-label="退出全屏">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="lightbox-body" id="lightbox-body">
+        <img id="lightbox-img" src="" alt="全屏用例图预览" />
+      </div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/uml.js"></script>
+</body>
+</html>
