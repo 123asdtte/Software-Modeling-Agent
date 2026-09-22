@@ -10,16 +10,17 @@
 """
 
 import asyncio
-import json
 import logging
-import re
 from functools import lru_cache
-from typing import ClassVar, TypeVar
+from typing import ClassVar
 
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field
 
 from app.config.settings import get_settings
-from app.models.llm import get_llm
+from app.core.structured_output import (
+    extract_json,  # noqa: F401 - re-export 保持既有导入路径兼容
+    invoke_structured,
+)
 from app.prompts.teacher_prompt import (
     LESSON_SYSTEM_PROMPT,
     LESSON_USER_TMPL,
@@ -29,10 +30,6 @@ from app.prompts.teacher_prompt import (
 )
 
 logger = logging.getLogger(__name__)
-
-T = TypeVar("T", bound=BaseModel)
-
-_JSON_RE = re.compile(r"\{.*\}", re.DOTALL)
 
 
 # ---------------- 输出模型 ----------------
@@ -120,39 +117,18 @@ class LessonPlan(BaseModel):
 # ---------------- JSON 提取与校验 ----------------
 
 
-def extract_json(text: str) -> dict:
-    """从模型输出中提取 JSON 对象（容忍 markdown 围栏与前后杂文）。"""
-    # 优先剥 ```json 围栏；没有围栏则取首个平衡大括号块
-    fenced = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
-    if fenced:
-        return json.loads(fenced.group(1))
-    match = _JSON_RE.search(text)
-    if not match:
-        raise ValueError("输出中未找到 JSON 对象")
-    return json.loads(match.group(0))
-
-
-def _invoke_json(messages, model_cls: type[T], retries: int = 1) -> T:
-    """调用 LLM 并解析为 pydantic 模型；校验失败带错误反馈重试。
+def _invoke_json(messages, model_cls, retries: int = 1):
+    """调用 LLM 并解析为 pydantic 模型（薄包装，逻辑统一在 core.structured_output）。
 
     使用长超时（gen_llm_timeout）：大 JSON + 推理模型的输出时间远超 QA 场景。
+    失败抛 StructuredOutputError（是 RuntimeError 子类，既有异常语义兼容）。
     """
-    llm = get_llm(timeout=get_settings().gen_llm_timeout)
-    last_error: Exception | None = None
-    feedback: list = []
-    for attempt in range(1 + retries):
-        try:
-            raw = str(llm.invoke(messages + feedback).content)
-            return model_cls.model_validate(extract_json(raw))
-        except (ValueError, json.JSONDecodeError, ValidationError) as exc:
-            last_error = exc
-            feedback = [("user", "上次输出解析失败：" + str(exc)[:300] + "。请重新严格只输出符合要求的 JSON。")]
-            logger.warning("第 %d 次 JSON 解析/校验失败（%s）：%s", attempt + 1, model_cls.__name__, str(exc)[:120])
-        except Exception as exc:  # noqa: BLE001 - API 层失败同样重试（平台偶发 5xx/网关超时）
-            last_error = exc
-            feedback = []
-            logger.warning("第 %d 次 API 调用失败（%s）：%s", attempt + 1, model_cls.__name__, str(exc)[:120])
-    raise RuntimeError(f"{model_cls.__name__} 结构化生成失败：{last_error}")
+    return invoke_structured(
+        messages,
+        model_cls,
+        retries=retries,
+        timeout=get_settings().gen_llm_timeout,
+    )
 
 
 # ---------------- PPT 生成 ----------------

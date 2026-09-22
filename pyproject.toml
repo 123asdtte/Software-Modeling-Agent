@@ -6,8 +6,9 @@ description = "AI 教学智能体平台 v13（QA / PPT / 教案 / UML 多智能�
 requires-python = ">=3.11"
 
 [tool.ruff]
-# 与项目 venv 实际运行版本（3.14）一致
-target-version = "py314"
+# 与项目 venv 实际运行版本一致（实测 3.12.10；pyvenv.cfg 声称 3.14.7 是错误的——
+# 若按 py314 配置，ruff format 会产出 PEP 758 无括号 except，3.12 运行时直接 SyntaxError）
+target-version = "py312"
 # 120：现有中文注释/日志行较长，100 会产生 21 处超长报警；
 # 120 为常见工程实践，避免为行宽大范围改动业务代码
 line-length = 120

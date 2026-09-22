@@ -26,7 +26,9 @@ def test_pyproject_exists_and_parses():
 def test_ruff_baseline_config():
     """Ruff 基线：目标版本、行宽、规则集锁定。"""
     cfg = _load()["tool"]["ruff"]
-    assert cfg["target-version"] == "py314"  # 与 venv 实际版本一致
+    # 实测 venv 解释器为 3.12.10（pyvenv.cfg 声称 3.14.7 是错的）：
+    # 若按 py314，ruff format 会产出 PEP 758 无括号 except，3.12 运行时直接 SyntaxError
+    assert cfg["target-version"] == "py312"
     assert cfg["line-length"] == 120
     assert set(cfg["lint"]["select"]) == {"E", "F", "I", "B", "SIM"}
     # scripts 的 sys.path 插桩为刻意行为，E402 豁免必须有据可查
