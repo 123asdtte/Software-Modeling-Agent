@@ -68,6 +68,7 @@ class Settings(BaseSettings):
 
     # UML 用例图生成：独立并发/超时（不与 PPT/教案共享模糊的全局限制）
     uml_timeout: float = 150.0
+    uml_llm_timeout: float = 150.0
     uml_max_concurrency: int = 2
 
 

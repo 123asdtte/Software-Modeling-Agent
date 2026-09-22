@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+from pathlib import Path
 
 import pytest
 
@@ -125,3 +126,19 @@ def test_prompt_contains_modeling_rules():
     system_text = captured["messages"][0][1]
     assert "内部组件" in system_text
     assert "只输出一个 JSON" in system_text
+
+
+def test_uml_chain_does_not_share_generation_semaphore():
+    """并发隔离契约（评审 P1）：UML Chain 不得复用 generation_chain 的
+    私有 semaphore——静态断言源码中不出现跨模块导入。"""
+    src = Path(__file__).resolve().parents[1].joinpath("app", "chains", "uml_chain.py").read_text(encoding="utf-8")
+    assert "_gen_semaphore" not in src
+    assert "from app.chains.generation_chain" not in src
+    assert "import generation_chain" not in src
+
+
+def test_uml_chain_uses_dedicated_llm_timeout():
+    """UML Chain 使用 uml_llm_timeout（而非 gen_llm_timeout）——超时配置职责分离。"""
+    src = Path(__file__).resolve().parents[1].joinpath("app", "chains", "uml_chain.py").read_text(encoding="utf-8")
+    assert "uml_llm_timeout" in src
+    assert "gen_llm_timeout" not in src

@@ -3,8 +3,11 @@
 链路：generate_usecase_model（LLM 只产结构化 JSON）
    → render_usecase_plantuml（确定性渲染）
    → check_usecase_model（纯代码质检）
-错误约定：StructuredOutputError 与其他内部异常统一映射为固定文案 502，
-异常细节只写日志，不向客户端透传（见 app.core.structured_output 安全约定）。
+错误约定：
+- LLM 侧失败（结构化/上游）→ 502 固定文案；
+- 超时 → 504；
+- renderer/rules 未预期异常（属服务端内部缺陷而非上游失败）→ 500 固定文案；
+- 异常细节只写日志，不向客户端透传（见 app.core.structured_output 安全约定）。
 """
 
 import asyncio
@@ -17,7 +20,6 @@ from app.chains.uml_chain import generate_usecase_model
 from app.config.settings import get_settings
 from app.core.structured_output import StructuredOutputError
 from app.models.review import ReviewReport
-from app.models.uml import UseCaseModel
 from app.renderers.plantuml import render_usecase_plantuml
 from app.rules.usecase_rules import check_usecase_model
 
@@ -30,6 +32,7 @@ _uml_semaphore = asyncio.Semaphore(_settings.uml_max_concurrency)
 
 # 固定对外错误文案（不携带任何内部异常细节）
 _ERR_UPSTREAM = "用例图生成失败，请稍后重试或调整需求描述"
+_ERR_INTERNAL = "用例图处理异常，请联系维护者查看服务日志"
 
 
 class UmlUseCaseRequest(BaseModel):
@@ -38,13 +41,23 @@ class UmlUseCaseRequest(BaseModel):
     requirement: str = Field(min_length=1, max_length=3000)
 
 
-@router.post("/usecase")
-async def generate_usecase(req: UmlUseCaseRequest) -> dict:
+class UmlUseCaseResponse(BaseModel):
+    """用例图生成响应体（OpenAPI 契约；字段名与既有响应一致，不破坏前端）。"""
+
+    diagram_type: str
+    model: dict
+    plantuml: str
+    review_report: ReviewReport
+
+
+@router.post("/usecase", response_model=UmlUseCaseResponse)
+async def generate_usecase(req: UmlUseCaseRequest) -> UmlUseCaseResponse:
     """自然语言需求 → 用例图 JSON 模型 + PlantUML 源码 + 质检报告。"""
     requirement = req.requirement.strip()
     if not requirement:
         raise HTTPException(status_code=422, detail="需求描述不能为空白")
 
+    # 阶段一：LLM 结构化生成（上游失败 → 502，超时 → 504）
     try:
         async with _uml_semaphore:
             model = await asyncio.wait_for(generate_usecase_model(requirement), timeout=_settings.uml_timeout)
@@ -52,23 +65,23 @@ async def generate_usecase(req: UmlUseCaseRequest) -> dict:
         logger.warning("用例图生成超时（>%ss）", _settings.uml_timeout)
         raise HTTPException(status_code=504, detail="生成超时，请稍后重试") from exc
     except StructuredOutputError as exc:
-        # 细节（含上游错误）只进日志
         logger.exception("用例图结构化生成失败：%s", exc)
         raise HTTPException(status_code=502, detail=_ERR_UPSTREAM) from exc
     except Exception as exc:  # noqa: BLE001 - 统一固定文案，防内部泄露
         logger.exception("用例图生成异常")
         raise HTTPException(status_code=502, detail=_ERR_UPSTREAM) from exc
 
-    # 渲染与质检：确定性代码，除非模型契约被破坏否则不应失败
-    plantuml = render_usecase_plantuml(model)
-    report: ReviewReport = check_usecase_model(model)
+    # 阶段二：渲染 + 质检（确定性代码；异常属服务端缺陷 → 500 而非 502）
+    try:
+        plantuml = render_usecase_plantuml(model)
+        report: ReviewReport = check_usecase_model(model)
+    except Exception as exc:  # noqa: BLE001 - renderer/rules 缺陷不向客户端泄露
+        logger.exception("用例图渲染/质检阶段异常")
+        raise HTTPException(status_code=500, detail=_ERR_INTERNAL) from exc
 
-    # 防御：EnsureCaseModel 类型契约（render/check 均要求 UseCaseModel）
-    assert isinstance(model, UseCaseModel)
-
-    return {
-        "diagram_type": model.type.value,
-        "model": model.model_dump(by_alias=True),
-        "plantuml": plantuml,
-        "review_report": report.model_dump(),
-    }
+    return UmlUseCaseResponse(
+        diagram_type=model.type.value,
+        model=model.model_dump(by_alias=True),
+        plantuml=plantuml,
+        review_report=report,
+    )

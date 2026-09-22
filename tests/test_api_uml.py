@@ -118,3 +118,78 @@ def test_usecase_endpoint_warning_only_passes(monkeypatch):
 def test_old_endpoints_still_work():
     """旧端点回归：/health 与路由注册不受 UML 改动影响。"""
     assert client.get("/health").status_code == 200
+
+
+def test_usecase_endpoint_500_on_renderer_bug(monkeypatch):
+    """renderer 内部缺陷：返回固定 500 文案，内部异常不泄露。"""
+
+    async def fake_gen(requirement, llm_factory=None):
+        return _fake_model()
+
+    _patch_chain(monkeypatch, fake_gen)
+
+    def _boom(model):
+        raise RuntimeError("路径 C:/secret 泄露尝试")
+
+    import app.api.uml as uml_api
+
+    monkeypatch.setattr(uml_api, "render_usecase_plantuml", _boom)
+    resp = client.post("/v1/uml/usecase", json={"requirement": "学生发布商品"})
+    assert resp.status_code == 500
+    assert "secret" not in resp.json()["detail"]  # 内部细节不泄露
+
+
+def test_usecase_response_contract(monkeypatch):
+    """响应符合 UmlUseCaseResponse 契约（response_model 校验后字段稳定）。"""
+
+    async def fake_gen(requirement, llm_factory=None):
+        return _fake_model()
+
+    _patch_chain(monkeypatch, fake_gen)
+    resp = client.post("/v1/uml/usecase", json={"requirement": "学生发布商品"})
+    body = resp.json()
+    # 字段名与语义保持不变（评审：response_model 不改变已有字段）
+    assert set(body.keys()) == {"diagram_type", "model", "plantuml", "review_report"}
+    assert body["diagram_type"] == "usecase"
+    # OpenAPI 文档中注册了响应模型
+    schema = client.get("/openapi.json").json()
+    resp_schema = schema["paths"]["/v1/uml/usecase"]["post"]["responses"]["200"]
+    assert "UmlUseCaseResponse" in resp_schema["content"]["application/json"]["schema"]["$ref"]
+
+
+def test_uml_concurrency_limit_enforced(monkeypatch):
+    """UML 并发上限（独立于 PPT/教案闸门）仍然生效。"""
+    import asyncio as aio
+
+    import httpx
+
+    from app.config.settings import get_settings
+
+    monkeypatch.setattr(get_settings(), "uml_max_concurrency", 1)
+    import app.api.uml as uml_api
+
+    monkeypatch.setattr(uml_api, "_uml_semaphore", aio.Semaphore(1))
+
+    active = 0
+    peak = 0
+
+    async def tracked(requirement, llm_factory=None):
+        nonlocal active, peak
+        active += 1
+        peak = max(peak, active)
+        await aio.sleep(0.05)
+        active -= 1
+        return _fake_model()
+
+    _patch_chain(monkeypatch, tracked)
+
+    async def run():
+        transport = httpx.ASGITransport(app=app)
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as ac:
+            responses = await aio.gather(
+                *[ac.post("/v1/uml/usecase", json={"requirement": "并发测试"}) for _ in range(3)]
+            )
+        assert all(r.status_code == 200 for r in responses)
+
+    aio.run(run())
+    assert peak == 1  # UML 专属信号量把并发压到 1
