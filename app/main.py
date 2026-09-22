@@ -3,6 +3,7 @@
 启动：python -m app 或 uvicorn app.main:app --reload
 """
 
+import asyncio
 import logging
 
 from fastapi import FastAPI, HTTPException
@@ -15,6 +16,9 @@ from app.models.llm import get_llm
 logger = logging.getLogger(__name__)
 
 settings = get_settings()
+
+# /v1/qa 并发闸门：hybrid 检索每问要串多次 LLM 调用，无限制并发会打满配额
+_qa_semaphore = asyncio.Semaphore(settings.qa_max_concurrency)
 
 app = FastAPI(
     title=settings.app_name,
@@ -80,9 +84,21 @@ def chat(req: ChatRequest) -> ChatResponse:
 
 @app.post("/v1/qa", response_model=QAResponse)
 async def qa(req: QARequest) -> QAResponse:
-    """教材智能问答（W2）：RAG 检索 + 四段式回答 + 来源标注。"""
+    """教材智能问答（W2）：RAG 检索 + 四段式回答 + 来源标注。
+
+    演示安全兜底：Semaphore 限并发 + wait_for 整体墙钟（LightRAG 内部
+    单次 LLM 超时高达 240s，无整体超时会让请求长时间挂死）。
+    """
     try:
-        result = await build_qa_answer(req.question)
+        async with _qa_semaphore:
+            result = await asyncio.wait_for(
+                build_qa_answer(req.question), timeout=settings.qa_timeout
+            )
+    except asyncio.TimeoutError as exc:
+        logger.warning("教材问答超时（>%ss）：%s", settings.qa_timeout, req.question[:50])
+        raise HTTPException(
+            status_code=504, detail=f"问答超时（>{settings.qa_timeout:.0f}s），请稍后重试"
+        ) from exc
     except FileNotFoundError as exc:
         logger.warning("知识库索引未构建：%s", exc)
         raise HTTPException(status_code=503, detail=str(exc)) from exc

@@ -40,8 +40,21 @@ class Settings(BaseSettings):
     model_name: str = "deepseek-flash"  # DeepSeek-V4.1-Flash；高配可换 deepseek-v4-pro
     base_url: str = "https://api.deepseek.com"
     temperature: float = 0.3
-    max_tokens: int = 2048
+    # deepseek-flash 为推理模型：reasoning tokens 与回答共用 max_tokens 预算，
+    # 过小会导致 content 被 reasoning 吃空（实测 max_tokens=10 时 content 为空）
+    max_tokens: int = 4096
     request_timeout: float = 60.0
+
+    # /v1/qa 演示安全兜底：整体墙钟 + 并发上限 + 检索预算（LightRAG 默认
+    # chunk_top_k=20、max_total_tokens=30000，会返回 2 万字符上下文，必须收紧）
+    qa_timeout: float = 60.0
+    qa_max_concurrency: int = 3
+    qa_chunk_top_k: int = 6
+    qa_max_total_tokens: int = 8000
+    qa_max_entity_tokens: int = 1500
+    qa_max_relation_tokens: int = 2000
+    qa_context_max_chars: int = 12000
+    qa_answer_retries: int = 1
 
 
 @lru_cache(maxsize=1)

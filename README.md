@@ -16,8 +16,24 @@
   - LightRAG 1.5.7 + fastembed（bge-small-zh-v1.5，512 维，离线 ONNX）
   - 已入库 14 块 / 24 分块向量，图谱 597 节点 / 954 边（实体抽取已用真实 LLM 补齐）
 - [x] 智能问答链路（chains/rag_chain）：hybrid 三路召回 → 来源标注提取 → 四段式回答
-- [x] POST /v1/qa 接口（503 未建索引 / 502 兜底），端到端实测通过（2026-09-21）
+- [x] POST /v1/qa 接口（503 未建索引 / 502 兜底 / 504 超时），端到端实测通过（2026-09-21）
+- [x] 演示安全加固（2026-09-22）
+  - `/v1/qa` 并发限流（Semaphore，默认 3）+ 整体墙钟 60s 超时（LightRAG 内部单次 LLM 超时 240s，必须整体兜底）
+  - 检索预算收紧：chunk_top_k=6、max_total_tokens=8000（LightRAG 默认 20/30000 会返回 2 万字符上下文）+ 应用层 12000 字符兜底截断
+  - `enable_rerank=False` 消除未配置重排模型的重复告警
+  - `max_tokens` 2048→4096（deepseek-flash 为推理模型，reasoning 与回答共用预算）+ 空 content 自动重试 1 次
+  - 测试 2 → 20 个：document_reader / rag_chain（截断与空回答重试）/ /v1/qa 全路径（200/503/504/502/422/并发上限）
 - [ ] 后续：QA 评测集（≥30 问）→ W3 PPT/教案 → W4 UML Agent
+
+## 性能与成本预期（演示须知）
+
+| 项 | 实测值 | 说明 |
+|---|---|---|
+| hybrid 检索 | ~1.1s | 每问多一次 LLM 关键词抽取调用（有 llm_response_cache 缓存时更快）；纯 naive 模式 ~0.7s |
+| QA 生成 | ~10s | deepseek-flash 推理模型，reasoning 占用生成时间 |
+| 端到端 /v1/qa | ~12s | 演示时提前预热（首问触发索引加载 + 模型下载校验会更慢） |
+| 上下文预算 | ≤12000 字符 | 检索层 token 预算 + 应用层截断双保险 |
+| 并发 | 3 路 | 超出被 Semaphore 串行化；超 60s 返回 504 |
 
 ## 快速开始
 
