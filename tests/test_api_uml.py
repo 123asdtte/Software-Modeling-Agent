@@ -283,3 +283,61 @@ def test_uml_routes_registered():
     # 422 实证：路由存在（校验拒绝）而非 404（路由不存在），且不触发 LLM
     resp = client.post("/v1/uml/usecase", json={})
     assert resp.status_code == 422
+
+
+def test_render_false_skips_renderer(monkeypatch, tmp_path):
+    """render=False 时完全不调用渲染器（评审：不调用真实渲染器）。"""
+    monkeypatch.chdir(tmp_path)
+    from app.config.settings import get_settings
+
+    monkeypatch.setattr(get_settings(), "plantuml_jar_path", str(tmp_path / "nope.jar"))
+
+    calls = []
+
+    async def fake_gen(requirement, llm_factory=None):
+        return _fake_model()
+
+    _patch_chain(monkeypatch, fake_gen)
+    import app.api.uml as uml_api
+
+    def spy_renderer(src, fmt):
+        calls.append((src, fmt))
+        raise AssertionError("render=False 不应调用渲染器")
+
+    monkeypatch.setattr(uml_api, "render_plantuml_source", spy_renderer)
+    resp = client.post("/v1/uml/usecase", json={"requirement": "学生发布商品", "render": False})
+    assert resp.status_code == 200
+    assert calls == []
+
+
+def test_format_passed_to_renderer(monkeypatch, tmp_path):
+    """format=svg 正确传递给渲染器；下载 URL 以 .svg 结尾。"""
+    monkeypatch.chdir(tmp_path)
+
+    async def fake_gen(requirement, llm_factory=None):
+        return _fake_model()
+
+    _patch_chain(monkeypatch, fake_gen)
+    from app.renderers.diagram_renderer import RenderStatus
+    from app.storage.generated_files import save_bytes_atomic
+
+    seen_fmt: list = []
+
+    class _SvgResult:
+        status = RenderStatus.RENDERED
+        format = "svg"
+
+        def __init__(self):
+            self.filename = save_bytes_atomic("uml", "svg", b"<svg>ok</svg>")
+
+    import app.api.uml as uml_api
+
+    def spy_renderer(src, fmt):
+        seen_fmt.append(fmt)
+        return _SvgResult()
+
+    monkeypatch.setattr(uml_api, "render_plantuml_source", spy_renderer)
+    resp = client.post("/v1/uml/usecase", json={"requirement": "学生发布商品", "format": "svg"})
+    assert resp.status_code == 200
+    assert seen_fmt == ["svg"]
+    assert resp.json()["render"]["download_url"].endswith(".svg")

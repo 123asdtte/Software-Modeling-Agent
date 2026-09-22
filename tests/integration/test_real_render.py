@@ -5,10 +5,10 @@
 """
 
 import os
-from pathlib import Path
 
 import pytest
 
+from app.config.settings import resolve_project_path
 from app.renderers.diagram_renderer import RenderStatus, render_plantuml_source
 from app.storage.generated_files import resolve_download_path
 
@@ -18,7 +18,7 @@ SOURCE = "@startuml" + chr(10) + 'actor "学生" as a_1' + chr(10) + "@enduml" +
 
 
 def _enabled() -> bool:
-    return os.getenv("RUN_RENDER_INTEGRATION_TESTS") == "1" and Path("tools/plantuml.jar").is_file()
+    return os.getenv("RUN_RENDER_INTEGRATION_TESTS") == "1" and resolve_project_path("tools/plantuml.jar").is_file()
 
 
 def test_real_render_png_and_svg():
