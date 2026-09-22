@@ -34,20 +34,22 @@ class Settings(BaseSettings):
     app_version: str = "0.1.0"
     debug: bool = False
 
-    # 大模型（DeepSeek V4.1，OpenAI 兼容接口）
+    # 大模型（TokenRhythm 平台 glm-5.3-flash，OpenAI 兼容接口；
+    # 历史字段名 deepseek_api_key 沿用，改字段名需同步 .env 全量变更，不值当）
     deepseek_api_key: str = ""
-    model_provider: str = "deepseek"  # deepseek / openai_compatible，预留切换
-    model_name: str = "deepseek-flash"  # DeepSeek-V4.1-Flash；高配可换 deepseek-v4-pro
-    base_url: str = "https://api.deepseek.com"
+    model_provider: str = "tokenrhythm"  # tokenrhythm / openai_compatible / deepseek，预留切换
+    model_name: str = "glm-5.3-flash"  # 推理模型：reasoning 与回答共用 max_tokens 预算
+    base_url: str = "https://tokenrhythm.studio/v1"
+    # glm-5.3-flash 推理模型长回答实测可超 60s，单请求与整体墙钟同步放宽
     temperature: float = 0.3
     # deepseek-flash 为推理模型：reasoning tokens 与回答共用 max_tokens 预算，
     # 过小会导致 content 被 reasoning 吃空（实测 max_tokens=10 时 content 为空）
     max_tokens: int = 4096
-    request_timeout: float = 60.0
+    request_timeout: float = 90.0
 
     # /v1/qa 演示安全兜底：整体墙钟 + 并发上限 + 检索预算（LightRAG 默认
     # chunk_top_k=20、max_total_tokens=30000，会返回 2 万字符上下文，必须收紧）
-    qa_timeout: float = 60.0
+    qa_timeout: float = 90.0
     qa_max_concurrency: int = 3
     qa_chunk_top_k: int = 6
     qa_max_total_tokens: int = 8000
@@ -55,6 +57,14 @@ class Settings(BaseSettings):
     qa_max_relation_tokens: int = 2000
     qa_context_max_chars: int = 12000
     qa_answer_retries: int = 1
+
+    # 教学资源生成（PPT/教案）：结构化 JSON 多次调用，耗时高于 QA，放宽墙钟
+    # glm-5.3-flash 为推理模型，单次大 JSON（教案 9 字段）生成实测可超 60s，
+    # 单请求超时须与整条链路墙钟（gen_timeout）区分
+    gen_timeout: float = 180.0
+    gen_llm_timeout: float = 150.0
+    gen_max_concurrency: int = 2
+    outputs_dir: str = "outputs"
 
 
 @lru_cache(maxsize=1)

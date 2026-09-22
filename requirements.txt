@@ -20,6 +20,9 @@ ruff==0.16.8
 # W2 知识库（RAG）：LightRAG + fastembed + 文档解析
 lightrag-hku==1.5.7
 fastembed
-python-docx
+python-docx==1.2.0
 pypdf
 numpy
+
+# W3 教学资源生成：PPT 输出
+python-pptx==1.0.2

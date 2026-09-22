@@ -129,6 +129,20 @@ def truncate_context(context: str, max_chars: int) -> str:
     return context[:cut].rstrip()
 
 
+# 兜底来源提取：hybrid 只召回实体关系（无 chunk）时上下文里没有【来源】标注，
+# 从回答的"教材关联"段提取任务/校验表/互动点引用，保证引用可追溯率（PRD 要求 100%）
+_TASK_REF_RE = re.compile(
+    r"(任务[一二三四五六七八九十]+[^\n，。；）)】]{0,12}"
+    r"|表\s?\d+-\d+[^\n，。；）)】]{0,12}"
+    r"|AI互动[①②③④⑤⑥⑦⑧⑨⑩][^\n，。；）)】]{0,12})"
+)
+
+
+def fallback_sources_from_reply(reply: str) -> list[str]:
+    """从回答文本中提取「任务X / 表X-Y / AI互动N」引用作为兜底来源。"""
+    return list(dict.fromkeys(m.group(0).strip() for m in _TASK_REF_RE.finditer(reply)))[:5]
+
+
 async def build_qa_answer(question: str, top_k: int | None = None) -> dict:
     """完整 QA 链路（async）：检索 → 四段式生成 → 来源标注。
 
@@ -158,4 +172,9 @@ async def build_qa_answer(question: str, top_k: int | None = None) -> dict:
         logger.warning("QA 第 %d 次生成返回空 content，重试", attempt + 1)
     if not reply.strip():
         raise RuntimeError("模型返回空回答（reasoning 耗尽 max_tokens），已重试仍失败")
+    if not sources:
+        # hybrid 只召回实体/关系时无 chunk 前缀标注，从回答的教材关联段兜底提取
+        sources = fallback_sources_from_reply(reply)
+        if sources:
+            logger.info("来源标注为空，已从回答提取任务引用兜底：%s", sources[:2])
     return {"reply": reply, "sources": sources}

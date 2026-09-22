@@ -29,3 +29,6 @@ htmlcov/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# 生成产物（PPT/教案，可重建）
+outputs/

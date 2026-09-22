@@ -25,7 +25,15 @@
   - `enable_rerank=False` 消除未配置重排模型的重复告警
   - `max_tokens` 2048→4096（deepseek-flash 为推理模型，reasoning 与回答共用预算）+ 空 content 自动重试 1 次
   - 测试 2 → 20 个：document_reader / rag_chain（截断与空回答重试）/ /v1/qa 全路径（200/503/504/502/422/并发上限）
-- [ ] 后续：QA 评测集（≥30 问）→ W3 PPT/教案 → W4 UML Agent
+- [x] QA 评测集（42 条，真人提问模式：口语/错别字/超纲/闲聊/注入/超长/中英混合）
+  - 基线（glm-5.3-flash）：检索命中 97% ✅ / 兜底 100% ✅ / 四段式 97% ✅ / 引用 97%（1 条平台 504）
+  - 复现：`python -m tests.evaluation.run_qa_eval --out <path>.json`；报告见 `tests/evaluation/baseline_report.md`
+- [x] M3 PPT 生成 Agent（W3）：大纲 7 要素 → 分节并发生成 → python-pptx 出 .pptx + 讲课备注；`POST /v1/ppt`
+  - 端到端实测（45 分钟课题）：7 要素全中 / 9 页 / 备注 9/9 / 53KB；耗时 211s（超 PRD 60s，见 issue）
+- [x] M3 教案生成 Agent（W3）：9 字段结构化（三维目标/重难点/流程/师生活动/练习/作业）→ Markdown + docx 导出；`POST /v1/lesson`
+  - 端到端实测：9 字段无缺失 / 流程 6 环节 / docx 39KB；耗时 219s（同上）
+- [x] 大模型切换 TokenRhythm 平台（glm-5.3-flash，OpenAI 兼容；原 DeepSeek 余额耗尽）
+- [ ] 后续：M4 UML Agent（生成/质检/出图闭环）→ M5 Web 展示 + Demo 验收
 
 ## 性能与成本预期（演示须知）
 

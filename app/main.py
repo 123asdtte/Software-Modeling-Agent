@@ -1,12 +1,16 @@
-"""FastAPI 入口（v13）：健康检查 + 一句话问答 + 教材智能问答（RAG）。
+"""FastAPI 入口（v13）：健康检查 + 一句话问答 + 教材智能问答（RAG）+ 教学资源生成（PPT/教案）。
 
 启动：python -m app 或 uvicorn app.main:app --reload
 """
 
 import asyncio
 import logging
+import re
+import uuid
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from app.chains.rag_chain import build_qa_answer
@@ -19,6 +23,21 @@ settings = get_settings()
 
 # /v1/qa 并发闸门：hybrid 检索每问要串多次 LLM 调用，无限制并发会打满配额
 _qa_semaphore = asyncio.Semaphore(settings.qa_max_concurrency)
+# /v1/ppt、/v1/lesson 并发闸门：结构化生成更重，2 路足够演示
+_gen_semaphore = asyncio.Semaphore(settings.gen_max_concurrency)
+
+# 下载文件名白名单：仅允许平台生成的 uuid.ext 形式，防路径穿越
+_SAFE_FILENAME_RE = re.compile(r"^[0-9a-f]{32}\.(pptx|docx|md)$")
+
+
+def _outputs_path(kind: str, filename: str) -> Path:
+    """解析下载路径并校验白名单（防 ../ 穿越）。"""
+    if not _SAFE_FILENAME_RE.match(filename):
+        raise HTTPException(status_code=404, detail="文件不存在")
+    path = Path(settings.outputs_dir) / kind / filename
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="文件不存在或已过期")
+    return path
 
 app = FastAPI(
     title=settings.app_name,
@@ -106,3 +125,104 @@ async def qa(req: QARequest) -> QAResponse:
         logger.exception("教材问答失败")
         raise HTTPException(status_code=502, detail=f"教材问答失败：{exc}") from exc
     return QAResponse(reply=result["reply"], sources=result["sources"])
+
+
+# ---------------- 教学资源生成（M3：PPT / 教案）----------------
+
+class PptRequest(BaseModel):
+    """PPT 生成请求体（PRD：课题 + 课时）。"""
+
+    topic: str = Field(..., min_length=2, max_length=100, description="课程主题")
+    minutes: int = Field(90, ge=15, le=240, description="课时（分钟）")
+
+
+class LessonRequest(BaseModel):
+    """教案生成请求体（PRD：课题 + 课时）。"""
+
+    topic: str = Field(..., min_length=2, max_length=100, description="课程主题")
+    minutes: int = Field(45, ge=15, le=240, description="课时（分钟）")
+
+
+@app.post("/v1/ppt")
+async def generate_ppt(req: PptRequest) -> dict:
+    """PPT 生成（M3）：大纲 → 分节并发生成 → .pptx 落盘。
+
+    返回大纲与全部页面 JSON（供前端二次编辑重生成，PRD PPT-6）+ 下载地址。
+    """
+    from app.chains.generation_chain import generate_ppt_deck_async
+    from app.tools.ppt_generator import deck_to_pptx
+
+    try:
+        async with _gen_semaphore:
+            deck = await asyncio.wait_for(
+                generate_ppt_deck_async(req.topic, req.minutes),
+                timeout=settings.gen_timeout,
+            )
+    except asyncio.TimeoutError as exc:
+        logger.warning("PPT 生成超时（>%ss）：%s", settings.gen_timeout, req.topic)
+        raise HTTPException(
+            status_code=504, detail=f"生成超时（>{settings.gen_timeout:.0f}s），请稍后重试"
+        ) from exc
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("PPT 生成失败")
+        raise HTTPException(status_code=502, detail=f"PPT 生成失败：{exc}") from exc
+
+    file_id = uuid.uuid4().hex
+    out = Path(settings.outputs_dir) / "ppt" / f"{file_id}.pptx"
+    deck_to_pptx(deck, out)
+    return {
+        "title": deck["outline"].get("title", req.topic),
+        "total_pages": len(deck["pages"]),
+        "outline": deck["outline"],
+        "pages": deck["pages"],
+        "download_url": f"/files/ppt/{file_id}.pptx",
+    }
+
+
+@app.post("/v1/lesson")
+async def generate_lesson(req: LessonRequest) -> dict:
+    """教案生成（M3）：9 字段结构化 → Markdown + docx 落盘。"""
+    from app.chains.generation_chain import generate_lesson_plan
+    from app.tools.docx_exporter import lesson_to_docx, lesson_to_markdown
+
+    try:
+        async with _gen_semaphore:
+            lesson = await asyncio.wait_for(
+                asyncio.to_thread(generate_lesson_plan, req.topic, req.minutes),
+                timeout=settings.gen_timeout,
+            )
+    except asyncio.TimeoutError as exc:
+        logger.warning("教案生成超时（>%ss）：%s", settings.gen_timeout, req.topic)
+        raise HTTPException(
+            status_code=504, detail=f"生成超时（>{settings.gen_timeout:.0f}s），请稍后重试"
+        ) from exc
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("教案生成失败")
+        raise HTTPException(status_code=502, detail=f"教案生成失败：{exc}") from exc
+
+    data = lesson.model_dump()
+    file_id = uuid.uuid4().hex
+    docx_path = Path(settings.outputs_dir) / "lesson" / f"{file_id}.docx"
+    lesson_to_docx(data, docx_path)
+    return {
+        "lesson": data,
+        "markdown": lesson_to_markdown(data),
+        "missing_fields": lesson.missing_fields(),
+        "download_url": f"/files/lesson/{file_id}.docx",
+    }
+
+
+@app.get("/files/ppt/{filename}")
+def download_ppt(filename: str) -> FileResponse:
+    """下载生成的 PPT 文件（uuid 白名单校验）。"""
+    return FileResponse(_outputs_path("ppt", filename), filename=filename)
+
+
+@app.get("/files/lesson/{filename}")
+def download_lesson(filename: str) -> FileResponse:
+    """下载生成的教案文件（uuid 白名单校验）。"""
+    return FileResponse(_outputs_path("lesson", filename), filename=filename)
