@@ -23,3 +23,6 @@ select = ["E", "F", "I", "B", "SIM"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "integration: requires real external model/API",
+]

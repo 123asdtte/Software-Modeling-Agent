@@ -15,6 +15,7 @@ httpx==0.28.1
 
 # 测试
 pytest==9.1.1
+pytest-asyncio==1.4.0
 ruff==0.16.8
 
 # W2 知识库（RAG）：LightRAG + fastembed + 文档解析

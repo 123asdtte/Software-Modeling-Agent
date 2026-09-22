@@ -13,6 +13,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
+from app.api.uml import router as uml_router
 from app.chains.rag_chain import build_qa_answer
 from app.config.settings import get_settings
 from app.models.llm import get_llm
@@ -45,6 +46,9 @@ app = FastAPI(
     version=settings.app_version,
     description="AI 教学智能体平台 v13",
 )
+
+# M4 起：新功能路由独立成包（评审 P0），main.py 只负责注册
+app.include_router(uml_router)
 
 
 class ChatRequest(BaseModel):
