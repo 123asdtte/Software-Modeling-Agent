@@ -19,7 +19,7 @@ from app.config.settings import get_settings, resolve_project_path
 ALLOWED_EXTENSIONS: dict[str, set[str]] = {
     "ppt": {"pptx"},
     "lesson": {"docx"},
-    "uml": {"png", "svg"},
+    "uml": {"png", "svg", "drawio"},
 }
 
 

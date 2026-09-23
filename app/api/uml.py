@@ -26,6 +26,7 @@ from app.models.uml import UseCaseModel
 from app.renderers.diagram_renderer import RenderStatus, render_plantuml_source
 from app.renderers.plantuml import render_usecase_plantuml
 from app.rules.usecase_rules import check_usecase_model
+from app.storage.generated_files import save_bytes_atomic
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +85,7 @@ class UmlUseCaseResponse(BaseModel):
     plantuml: str
     review_report: ReviewReport
     render: RenderResponse
+    drawio_download_url: str | None = None
 
 
 @router.post("/usecase", response_model=UmlUseCaseResponse)
@@ -115,6 +117,17 @@ async def generate_usecase(req: UmlUseCaseRequest) -> UmlUseCaseResponse:
         logger.exception("用例图渲染/质检阶段异常")
         raise HTTPException(status_code=500, detail=_ERR_INTERNAL) from exc
 
+    # 阶段二点五：draw.io 版本同步导出（教师可在 diagrams.net 继续编辑；失败不阻塞）
+    drawio_url = None
+    try:
+        from app.renderers.drawio_renderer import render_usecase_drawio
+
+        drawio_src = render_usecase_drawio(model)
+        drawio_name = save_bytes_atomic("uml", "drawio", drawio_src.encode("utf-8"))
+        drawio_url = f"/files/uml/{drawio_name}"
+    except Exception:  # noqa: BLE001 - drawio 失败不影响主链路
+        logger.exception("draw.io 导出失败（已跳过）")
+
     # 阶段三：图片渲染（环境缺失/失败自动降级 source_only，不影响 200 响应）
     render_info = RenderResponse(status=RenderStatus.SOURCE_ONLY)
     if req.render:
@@ -138,6 +151,7 @@ async def generate_usecase(req: UmlUseCaseRequest) -> UmlUseCaseResponse:
         plantuml=plantuml,
         review_report=report,
         render=render_info,
+        drawio_download_url=drawio_url,
     )
 
 

@@ -242,5 +242,11 @@ def download_lesson(filename: str) -> FileResponse:
 @app.get("/files/uml/{filename}")
 def download_uml(filename: str) -> FileResponse:
     """下载生成的 UML 图片（png/svg，uuid 白名单校验）。"""
-    media = "image/png" if filename.endswith(".png") else "image/svg+xml"
+    media = (
+        "image/png"
+        if filename.endswith(".png")
+        else "image/svg+xml"
+        if filename.endswith(".svg")
+        else "application/xml"
+    )
     return FileResponse(_outputs_path("uml", filename), filename=filename, media_type=media)

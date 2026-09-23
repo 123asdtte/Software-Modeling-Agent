@@ -38,6 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const sourceOnlyBox = document.getElementById("source-only-box");
   const sourceOnlyReason = document.getElementById("source-only-reason");
   const downloadBtn = document.getElementById("download-btn");
+  const downloadDrawioBtn = document.getElementById("download-drawio-btn");
   const btnOpenCopilot = document.getElementById("btn-open-copilot");
 
   // 标签页控制 (AI 对话调优、质检报告、要素清单)
@@ -508,6 +509,7 @@ document.addEventListener("DOMContentLoaded", () => {
     resultSection.scrollIntoView({ behavior: "smooth", block: "start" });
 
     currentModelData = data.model || {};
+    window.__lastDrawioUrl = data.drawio_download_url || null;
     const issues = (data.review_report && data.review_report.issues) || [];
     cachedIssues = issues;
 

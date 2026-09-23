@@ -201,7 +201,6 @@ def test_package_single_part_failure_tolerated(monkeypatch, tmp_path):
     assert body["tasksheet"] is None
 
 
-
 def test_chat_adjust_endpoint_ok(monkeypatch):
     """对话式修正：Fake LLM 返回修正后模型 → 200 + success/model/plantuml/render。"""
     from app.chains import uml_adjust
