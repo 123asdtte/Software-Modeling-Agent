@@ -39,6 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const sourceOnlyReason = document.getElementById("source-only-reason");
   const downloadBtn = document.getElementById("download-btn");
   const downloadDrawioBtn = document.getElementById("download-drawio-btn");
+  const exportFormatSelect = document.getElementById("export-format-select");
   const btnOpenCopilot = document.getElementById("btn-open-copilot");
 
   // 标签页控制 (AI 对话调优、质检报告、要素清单)
@@ -510,6 +511,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     currentModelData = data.model || {};
     window.__lastDrawioUrl = data.drawio_download_url || null;
+    window.__lastExportPref = (exportFormatSelect && exportFormatSelect.value) || "both";
     const issues = (data.review_report && data.review_report.issues) || [];
     cachedIssues = issues;
 
@@ -622,6 +624,8 @@ document.addEventListener("DOMContentLoaded", () => {
       umlImage.onerror = () => {
         umlImage.style.display = "none";
         downloadBtn.style.display = "none";
+        if (downloadDrawioBtn) downloadDrawioBtn.style.display = "none";
+        if (downloadPumlBtn) downloadPumlBtn.style.display = "none";
         if (canvasToolbar) canvasToolbar.style.display = "none";
         sourceOnlyBox.style.display = "block";
         sourceOnlyReason.textContent = "图形加载遇到异常，请直接查看或复制下方 PlantUML 源码。";
@@ -632,6 +636,30 @@ document.addEventListener("DOMContentLoaded", () => {
       downloadBtn.download = `usecase_${Date.now()}.${(renderInfo.format || "png").toLowerCase()}`;
       downloadBtn.textContent = `下载 ${fmt}`;
       downloadBtn.style.display = "inline-flex";
+
+      // 可编辑源码导出（按「可编辑源码导出」偏好显示 draw.io / PlantUML 下载）
+      const exportPref = (exportFormatSelect && exportFormatSelect.value) || "both";
+      if (downloadDrawioBtn) {
+        const drawioUrl = window.__lastDrawioUrl || null;
+        if (drawioUrl && (exportPref === "both" || exportPref === "drawio")) {
+          downloadDrawioBtn.href = drawioUrl;
+          downloadDrawioBtn.download = `usecase_${Date.now()}.drawio`;
+          downloadDrawioBtn.style.display = "inline-flex";
+        } else {
+          downloadDrawioBtn.style.display = "none";
+        }
+      }
+      if (downloadPumlBtn) {
+        if (exportPref === "both" || exportPref === "plantuml") {
+          const blob = new Blob([originalPumlSource || ""], { type: "text/plain;charset=utf-8" });
+          downloadPumlBtn.href = URL.createObjectURL(blob);
+          downloadPumlBtn.download = `usecase_${Date.now()}.puml`;
+          downloadPumlBtn.style.display = "inline-flex";
+        } else {
+          downloadPumlBtn.style.display = "none";
+        }
+      }
+
     } else {
       umlImage.style.display = "none";
       downloadBtn.style.display = "none";

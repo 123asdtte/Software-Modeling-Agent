@@ -62,8 +62,16 @@
           <label for="format-select" class="form-label" style="margin-bottom: 0;">渲染格式：</label>
           <select id="format-select" class="form-select" style="width: 130px; height: 36px; padding: 4px 8px;">
             <option value="png" selected>PNG 高清位图</option>
-            <option value="svg">SVG 矢量矢量图</option>
+            <option value="svg">SVG 矢量图</option>
             <option value="source_only">仅生成源码</option>
+          </select>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <label for="export-format-select" class="form-label" style="margin-bottom: 0;">可编辑源码导出：</label>
+          <select id="export-format-select" class="form-select" style="width: 170px; height: 36px; padding: 4px 8px;">
+            <option value="both" selected>PlantUML + draw.io（推荐）</option>
+            <option value="drawio">draw.io 文件 (.drawio)</option>
+            <option value="plantuml">PlantUML 源码 (.puml)</option>
           </select>
         </div>
         <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
