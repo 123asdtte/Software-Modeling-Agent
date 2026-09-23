@@ -33,7 +33,8 @@
 - [x] M3 教案生成 Agent（W3）：9 字段结构化（三维目标/重难点/流程/师生活动/练习/作业）→ Markdown + docx 导出；`POST /v1/lesson`
   - 端到端实测：9 字段无缺失 / 流程 6 环节 / docx 39KB；耗时 219s（同上）
 - [x] 大模型切换 TokenRhythm 平台（glm-5.3-flash，OpenAI 兼容；原 DeepSeek 余额耗尽）
-- [ ] 后续：M4 UML Agent（生成/质检/出图闭环）→ M5 Web 展示 + Demo 验收
+- [x] M4 UML 用例图 Agent（W4-W5）：领域模型（契约冻结）→ 规则引擎 7 条 → PlantUML 源码渲染 → PNG/SVG 本地渲染（真实 Java v1.2026.8）→ `POST /v1/uml/usecase`（render/format + 质检报告 + 下载链接）；158 项测试
+- [x] M5 Web 展示（W5）：四页静态前端（首页/UML 建模/教材问答/课件教案）真实接口对接 + Playwright 浏览器端到端验证 8 项 PASS；Docker 单容器部署配置（Python 3.12 + JRE 17 + 预构建索引）
 
 ## 性能与成本预期（演示须知）
 
@@ -106,7 +107,10 @@ tests/                   # 与 app 对应的测试
 | 教案生成 | ✅ 已实现 | `app/chains/generation_chain.py` + `app/tools/docx_exporter.py` |
 | 结构化输出工具 | ✅ 已实现 | `app/core/structured_output.py`（PPT/教案已接入，UML 复用） |
 | UML 用例图·领域模型 | ✅ 契约已冻结 | `app/models/uml.py` / `app/models/review.py` |
-| UML 用例图·渲染/规则/API | ❌ 未实现 | 仅目录边界 `app/renderers/` `app/rules/` `app/api/` |
+| UML 用例图·规则引擎 | ✅ 已实现 | `app/rules/usecase_rules.py`（UC-B1/G1/R3/C1/R-DUP/R-GEN/R-REF 7 条） |
+| UML 用例图·源码渲染 | ✅ 已实现 | `app/renderers/plantuml.py`（确定性 alias + 显示文本转义） |
+| UML 用例图·PNG/SVG 渲染 | ✅ 已实现 | `app/renderers/diagram_renderer.py`（真实 Java，环境缺失自动降级源码） |
+| UML 用例图·API + Web 页 | ✅ 已实现 | `app/api/uml.py` + `static/uml.html`（质检报告 + 图片下载） |
 | UML 活动图 / 状态机图 | ❌ 未实现 | 仅有设计文档 |
 | 多 Agent Supervisor（LangGraph） | ❌ 未实现 | 仅有架构设计 |
 | 数据库 / FAISS·Milvus | ❌ 未实现 | RAG 用 LightRAG 内置存储 |
