@@ -49,6 +49,7 @@ class UmlUseCaseRequest(BaseModel):
     requirement: str = Field(min_length=1, max_length=3000)
     render: bool = True
     format: Literal["png", "svg"] = "png"
+    engine: Literal["plantuml", "drawio"] = "plantuml"
 
 
 class RenderResponse(BaseModel):
@@ -86,6 +87,7 @@ class UmlUseCaseResponse(BaseModel):
     review_report: ReviewReport
     render: RenderResponse
     drawio_download_url: str | None = None
+    svg_download_url: str | None = None
 
 
 @router.post("/usecase", response_model=UmlUseCaseResponse)
@@ -117,8 +119,9 @@ async def generate_usecase(req: UmlUseCaseRequest) -> UmlUseCaseResponse:
         logger.exception("用例图渲染/质检阶段异常")
         raise HTTPException(status_code=500, detail=_ERR_INTERNAL) from exc
 
-    # 阶段二点五：draw.io 版本同步导出（教师可在 diagrams.net 继续编辑；失败不阻塞）
+    # 阶段二点五：可编辑/矢量格式同步导出（draw.io 可继续编辑、SVG 可缩放嵌入；失败不阻塞）
     drawio_url = None
+    svg_url = None
     try:
         from app.renderers.drawio_renderer import render_usecase_drawio
 
@@ -127,10 +130,35 @@ async def generate_usecase(req: UmlUseCaseRequest) -> UmlUseCaseResponse:
         drawio_url = f"/files/uml/{drawio_name}"
     except Exception:  # noqa: BLE001 - drawio 失败不影响主链路
         logger.exception("draw.io 导出失败（已跳过）")
+    try:
+        from app.renderers.svg_renderer import render_usecase_svg
+
+        svg_src = render_usecase_svg(model)
+        svg_name = save_bytes_atomic("uml", "svg", svg_src.encode("utf-8"))
+        svg_url = f"/files/uml/{svg_name}"
+    except Exception:  # noqa: BLE001 - svg 失败不影响主链路
+        logger.exception("SVG 导出失败（已跳过）")
 
     # 阶段三：图片渲染（环境缺失/失败自动降级 source_only，不影响 200 响应）
     render_info = RenderResponse(status=RenderStatus.SOURCE_ONLY)
-    if req.render:
+    if req.render and req.engine == "drawio":
+        # drawio 引擎：主图走 SVG 渲染器（drawio 版式），不依赖 Java/Jar
+        try:
+            from app.renderers.svg_renderer import render_usecase_svg
+
+            svg_src = render_usecase_svg(model)
+            svg_name = save_bytes_atomic("uml", "svg", svg_src.encode("utf-8"))
+            render_info = RenderResponse(
+                status=RenderStatus.RENDERED,
+                format="svg",
+                download_url=f"/files/uml/{svg_name}",
+            )
+        except Exception:  # noqa: BLE001 - svg 失败降级
+            logger.exception("drawio 引擎渲染失败（降级源码）")
+            render_info = RenderResponse(
+                status=RenderStatus.SOURCE_ONLY, reason="图片渲染异常（已降级返回源码）"
+            )
+    elif req.render:
         try:
             result = await asyncio.to_thread(render_plantuml_source, plantuml, req.format)
             if result.status == RenderStatus.RENDERED:
@@ -152,6 +180,7 @@ async def generate_usecase(req: UmlUseCaseRequest) -> UmlUseCaseResponse:
         review_report=report,
         render=render_info,
         drawio_download_url=drawio_url,
+        svg_download_url=svg_url,
     )
 
 

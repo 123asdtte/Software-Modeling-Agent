@@ -62,8 +62,23 @@
           <label for="format-select" class="form-label" style="margin-bottom: 0;">渲染格式：</label>
           <select id="format-select" class="form-select" style="width: 130px; height: 36px; padding: 4px 8px;">
             <option value="png" selected>PNG 高清位图</option>
-            <option value="svg">SVG 矢量矢量图</option>
+            <option value="svg">SVG 矢量图</option>
             <option value="source_only">仅生成源码</option>
+          </select>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <label for="engine-select" class="form-label" style="margin-bottom: 0;">绘图引擎：</label>
+          <select id="engine-select" class="form-select" style="width: 150px; height: 36px; padding: 4px 8px;">
+            <option value="plantuml" selected>PlantUML 经典风格</option>
+            <option value="drawio">draw.io 编辑风格</option>
+          </select>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <label for="export-format-select" class="form-label" style="margin-bottom: 0;">可编辑源码导出：</label>
+          <select id="export-format-select" class="form-select" style="width: 170px; height: 36px; padding: 4px 8px;">
+            <option value="both" selected>PlantUML + draw.io（推荐）</option>
+            <option value="drawio">draw.io 文件 (.drawio)</option>
+            <option value="plantuml">PlantUML 源码 (.puml)</option>
           </select>
         </div>
         <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
@@ -187,6 +202,30 @@
                   <line x1="12" y1="15" x2="12" y2="3"></line>
                 </svg>
                 下载 draw.io
+              </a>
+            <a id="download-svg-btn" href="#" download class="btn btn-primary" style="display: none; padding: 6px 12px; font-size: 13px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                下载 SVG
+              </a>
+            <a id="download-drawio-png-btn" href="#" download class="btn btn-primary" style="display: none; padding: 6px 12px; font-size: 13px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                下载 PNG (drawio 版式)
+              </a>
+            <a id="download-svg-btn" href="#" download class="btn btn-primary" style="display: none; padding: 6px 12px; font-size: 13px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                下载 SVG
               </a>
             </div>
           </div>

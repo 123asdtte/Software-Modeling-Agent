@@ -149,7 +149,9 @@ def test_usecase_response_contract(monkeypatch):
     resp = client.post("/v1/uml/usecase", json={"requirement": "学生发布商品"})
     body = resp.json()
     # 字段名与语义保持不变（评审：response_model 不改变已有字段）
-    assert set(body.keys()) == {"diagram_type", "model", "plantuml", "review_report", "render", "drawio_download_url"}
+    assert set(body.keys()) == {
+        "diagram_type", "model", "plantuml", "review_report", "render", "drawio_download_url", "svg_download_url"
+    }
     assert body["diagram_type"] == "usecase"
     # OpenAPI 文档中注册了响应模型
     schema = client.get("/openapi.json").json()

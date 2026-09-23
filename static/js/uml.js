@@ -39,6 +39,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const sourceOnlyReason = document.getElementById("source-only-reason");
   const downloadBtn = document.getElementById("download-btn");
   const downloadDrawioBtn = document.getElementById("download-drawio-btn");
+  const exportFormatSelect = document.getElementById("export-format-select");
+  const downloadSvgBtn = document.getElementById("download-svg-btn");
+  const downloadDrawioPngBtn = document.getElementById("download-drawio-png-btn");
   const btnOpenCopilot = document.getElementById("btn-open-copilot");
 
   // 标签页控制 (AI 对话调优、质检报告、要素清单)
@@ -477,6 +480,7 @@ document.addEventListener("DOMContentLoaded", () => {
       requirement: rawVal,
       render: !isSourceOnly,
       format: isSourceOnly ? "png" : formatVal,
+      engine: (engineSelect && engineSelect.value) || "plantuml",
     };
 
     try {
@@ -510,6 +514,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     currentModelData = data.model || {};
     window.__lastDrawioUrl = data.drawio_download_url || null;
+    window.__lastExportPref = (exportFormatSelect && exportFormatSelect.value) || "both";
     const issues = (data.review_report && data.review_report.issues) || [];
     cachedIssues = issues;
 
@@ -622,6 +627,8 @@ document.addEventListener("DOMContentLoaded", () => {
       umlImage.onerror = () => {
         umlImage.style.display = "none";
         downloadBtn.style.display = "none";
+        if (downloadDrawioBtn) downloadDrawioBtn.style.display = "none";
+        if (downloadPumlBtn) downloadPumlBtn.style.display = "none";
         if (canvasToolbar) canvasToolbar.style.display = "none";
         sourceOnlyBox.style.display = "block";
         sourceOnlyReason.textContent = "图形加载遇到异常，请直接查看或复制下方 PlantUML 源码。";
@@ -632,6 +639,114 @@ document.addEventListener("DOMContentLoaded", () => {
       downloadBtn.download = `usecase_${Date.now()}.${(renderInfo.format || "png").toLowerCase()}`;
       downloadBtn.textContent = `下载 ${fmt}`;
       downloadBtn.style.display = "inline-flex";
+
+      // 可编辑源码导出（按「可编辑源码导出」偏好显示 draw.io / PlantUML 下载）
+      const exportPref = (exportFormatSelect && exportFormatSelect.value) || "both";
+      if (downloadDrawioBtn) {
+        const drawioUrl = window.__lastDrawioUrl || null;
+        if (drawioUrl && (exportPref === "both" || exportPref === "drawio")) {
+          downloadDrawioBtn.href = drawioUrl;
+          downloadDrawioBtn.download = `usecase_${Date.now()}.drawio`;
+          downloadDrawioBtn.style.display = "inline-flex";
+        } else {
+          downloadDrawioBtn.style.display = "none";
+        }
+      }
+      if (downloadPumlBtn) {
+        if (exportPref === "both" || exportPref === "plantuml") {
+          const blob = new Blob([originalPumlSource || ""], { type: "text/plain;charset=utf-8" });
+          downloadPumlBtn.href = URL.createObjectURL(blob);
+          downloadPumlBtn.download = `usecase_${Date.now()}.puml`;
+          downloadPumlBtn.style.display = "inline-flex";
+        } else {
+          downloadPumlBtn.style.display = "none";
+        }
+      }
+      if (downloadSvgBtn) {
+        const svgUrl = (window.__lastSvgUrl = data.svg_download_url || null);
+        if (svgUrl) {
+          downloadSvgBtn.href = svgUrl;
+          downloadSvgBtn.download = `usecase_${Date.now()}.svg`;
+          downloadSvgBtn.style.display = "inline-flex";
+        } else {
+          downloadSvgBtn.style.display = "none";
+        }
+      }
+      if (downloadDrawioPngBtn) {
+        if (svgUrl) {
+          // 惰性转换：点击时 SVG → canvas → PNG（drawio 版式位图，2x 高清）
+          downloadDrawioPngBtn.onclick = async () => {
+            const svgText = await (await fetch(svgUrl)).text();
+            const img = new Image();
+            const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgText);
+            await new Promise((res, rej) => {
+              img.onload = res;
+              img.onerror = rej;
+              img.src = dataUrl;
+            });
+            const canvas = document.createElement("canvas");
+            canvas.width = img.naturalWidth * 2;
+            canvas.height = img.naturalHeight * 2;
+            const ctx = canvas.getContext("2d");
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob((blob) => {
+              const a = document.createElement("a");
+              a.href = URL.createObjectURL(blob);
+              a.download = `usecase_${Date.now()}.png`;
+              a.click();
+              URL.revokeObjectURL(a.href);
+            }, "image/png");
+          };
+          downloadDrawioPngBtn.style.display = "inline-flex";
+        } else {
+          downloadDrawioPngBtn.style.display = "none";
+        }
+      }
+      if (downloadSvgBtn) {
+        const svgUrl = (window.__lastSvgUrl = data.svg_download_url || null);
+        if (svgUrl) {
+          downloadSvgBtn.href = svgUrl;
+          downloadSvgBtn.download = `usecase_${Date.now()}.svg`;
+          downloadSvgBtn.style.display = "inline-flex";
+        } else {
+          downloadSvgBtn.style.display = "none";
+        }
+      }
+      if (downloadDrawioPngBtn) {
+        if (svgUrl) {
+          // 惰性转换：点击时 SVG → canvas → PNG（drawio 版式位图，2x 高清）
+          downloadDrawioPngBtn.onclick = async () => {
+            const svgText = await (await fetch(svgUrl)).text();
+            const img = new Image();
+            const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgText);
+            await new Promise((res, rej) => {
+              img.onload = res;
+              img.onerror = rej;
+              img.src = dataUrl;
+            });
+            const canvas = document.createElement("canvas");
+            canvas.width = img.naturalWidth * 2;
+            canvas.height = img.naturalHeight * 2;
+            const ctx = canvas.getContext("2d");
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob((blob) => {
+              const a = document.createElement("a");
+              a.href = URL.createObjectURL(blob);
+              a.download = `usecase_${Date.now()}.png`;
+              a.click();
+              URL.revokeObjectURL(a.href);
+            }, "image/png");
+          };
+          downloadDrawioPngBtn.style.display = "inline-flex";
+        } else {
+          downloadDrawioPngBtn.style.display = "none";
+        }
+      }
+
     } else {
       umlImage.style.display = "none";
       downloadBtn.style.display = "none";
