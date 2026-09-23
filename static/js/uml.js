@@ -40,6 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const downloadBtn = document.getElementById("download-btn");
   const downloadDrawioBtn = document.getElementById("download-drawio-btn");
   const exportFormatSelect = document.getElementById("export-format-select");
+  const downloadSvgBtn = document.getElementById("download-svg-btn");
   const btnOpenCopilot = document.getElementById("btn-open-copilot");
 
   // 标签页控制 (AI 对话调优、质检报告、要素清单)
@@ -657,6 +658,26 @@ document.addEventListener("DOMContentLoaded", () => {
           downloadPumlBtn.style.display = "inline-flex";
         } else {
           downloadPumlBtn.style.display = "none";
+        }
+      }
+      if (downloadSvgBtn) {
+        const svgUrl = (window.__lastSvgUrl = data.svg_download_url || null);
+        if (svgUrl) {
+          downloadSvgBtn.href = svgUrl;
+          downloadSvgBtn.download = `usecase_${Date.now()}.svg`;
+          downloadSvgBtn.style.display = "inline-flex";
+        } else {
+          downloadSvgBtn.style.display = "none";
+        }
+      }
+      if (downloadSvgBtn) {
+        const svgUrl = (window.__lastSvgUrl = data.svg_download_url || null);
+        if (svgUrl) {
+          downloadSvgBtn.href = svgUrl;
+          downloadSvgBtn.download = `usecase_${Date.now()}.svg`;
+          downloadSvgBtn.style.display = "inline-flex";
+        } else {
+          downloadSvgBtn.style.display = "none";
         }
       }
 
