@@ -49,6 +49,7 @@ class UmlUseCaseRequest(BaseModel):
     requirement: str = Field(min_length=1, max_length=3000)
     render: bool = True
     format: Literal["png", "svg"] = "png"
+    engine: Literal["plantuml", "drawio"] = "plantuml"
 
 
 class RenderResponse(BaseModel):
@@ -140,7 +141,24 @@ async def generate_usecase(req: UmlUseCaseRequest) -> UmlUseCaseResponse:
 
     # 阶段三：图片渲染（环境缺失/失败自动降级 source_only，不影响 200 响应）
     render_info = RenderResponse(status=RenderStatus.SOURCE_ONLY)
-    if req.render:
+    if req.render and req.engine == "drawio":
+        # drawio 引擎：主图走 SVG 渲染器（drawio 版式），不依赖 Java/Jar
+        try:
+            from app.renderers.svg_renderer import render_usecase_svg
+
+            svg_src = render_usecase_svg(model)
+            svg_name = save_bytes_atomic("uml", "svg", svg_src.encode("utf-8"))
+            render_info = RenderResponse(
+                status=RenderStatus.RENDERED,
+                format="svg",
+                download_url=f"/files/uml/{svg_name}",
+            )
+        except Exception:  # noqa: BLE001 - svg 失败降级
+            logger.exception("drawio 引擎渲染失败（降级源码）")
+            render_info = RenderResponse(
+                status=RenderStatus.SOURCE_ONLY, reason="图片渲染异常（已降级返回源码）"
+            )
+    elif req.render:
         try:
             result = await asyncio.to_thread(render_plantuml_source, plantuml, req.format)
             if result.status == RenderStatus.RENDERED:

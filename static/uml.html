@@ -67,6 +67,13 @@
           </select>
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
+          <label for="engine-select" class="form-label" style="margin-bottom: 0;">绘图引擎：</label>
+          <select id="engine-select" class="form-select" style="width: 150px; height: 36px; padding: 4px 8px;">
+            <option value="plantuml" selected>PlantUML 经典风格</option>
+            <option value="drawio">draw.io 编辑风格</option>
+          </select>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
           <label for="export-format-select" class="form-label" style="margin-bottom: 0;">可编辑源码导出：</label>
           <select id="export-format-select" class="form-select" style="width: 170px; height: 36px; padding: 4px 8px;">
             <option value="both" selected>PlantUML + draw.io（推荐）</option>

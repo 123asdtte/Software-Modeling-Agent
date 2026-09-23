@@ -480,6 +480,7 @@ document.addEventListener("DOMContentLoaded", () => {
       requirement: rawVal,
       render: !isSourceOnly,
       format: isSourceOnly ? "png" : formatVal,
+      engine: (engineSelect && engineSelect.value) || "plantuml",
     };
 
     try {
