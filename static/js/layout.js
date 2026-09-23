@@ -1,19 +1,35 @@
 /**
  * 顶栏导航渲染与健康检查（js/layout.js）
- * 严格按照 M5 前端页面设计文档 6.1 节规范实现
+ * 视觉对齐 m5-teaching-platform 参考稿：
+ *   品牌区 = 黑色圆角方块图标 + 平台名 + " / " + 当前模块名
+ *   导航   = 药丸分段器（纯文字，激活项实心黑块）
+ *   右侧   = 细边框健康胶囊
+ * 健康检查/导航激活逻辑与原实现保持一致。
  */
 
 (function () {
-  function renderLayout() {
+  // 各页面的模块名（品牌区分隔符右侧），与参考稿 current-module-label 对应
+  const MODULE_LABEL = {
+    index: "平台总览",
+    uml: "UML 建模",
+    qa: "教材问答",
+    resources: "课件教案",
+  };
+
+  function detectActiveKey() {
     const currentPath = window.location.pathname;
-    let activeKey = "index";
     if (currentPath.endsWith("uml.html") || currentPath.endsWith("/uml")) {
-      activeKey = "uml";
+      return "uml";
     } else if (currentPath.endsWith("qa.html") || currentPath.endsWith("/qa")) {
-      activeKey = "qa";
+      return "qa";
     } else if (currentPath.endsWith("resources.html") || currentPath.endsWith("/resources")) {
-      activeKey = "resources";
+      return "resources";
     }
+    return "index";
+  }
+
+  function renderLayout() {
+    const activeKey = detectActiveKey();
 
     const header = document.createElement("header");
     header.className = "app-header";
@@ -22,53 +38,25 @@
     header.innerHTML = `
       <div class="header-container">
         <a href="index.html" class="brand-section" id="nav-brand">
-          <div class="brand-logo-badge">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <span class="brand-logo-badge" aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v1"></path>
               <path d="M18 8h4a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-4"></path>
               <circle cx="8" cy="12" r="2"></circle>
             </svg>
-          </div>
-          <div class="brand-title-wrap">
-            <span class="brand-title">AI 教学智能体平台</span>
-            <span class="brand-subtitle">高职软件建模教学 Copilot</span>
-          </div>
+          </span>
+          <span class="brand-title">AI 教学智能体平台</span>
+          <span class="brand-sep" aria-hidden="true">/</span>
+          <span class="brand-module" id="current-module-label">${MODULE_LABEL[activeKey]}</span>
         </a>
-        <nav class="nav-tabs" id="main-nav-tabs">
-          <a href="index.html" class="nav-tab-item ${activeKey === 'index' ? 'active' : ''}" id="tab-home">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              <polyline points="9 22 9 12 15 12 15 22"></polyline>
-            </svg>
-            首页
-          </a>
-          <a href="uml.html" class="nav-tab-item ${activeKey === 'uml' ? 'active' : ''}" id="tab-uml">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="7" height="7"></rect>
-              <rect x="14" y="3" width="7" height="7"></rect>
-              <rect x="14" y="14" width="7" height="7"></rect>
-              <rect x="3" y="14" width="7" height="7"></rect>
-            </svg>
-            UML 建模
-          </a>
-          <a href="qa.html" class="nav-tab-item ${activeKey === 'qa' ? 'active' : ''}" id="tab-qa">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </svg>
-            教材问答
-          </a>
-          <a href="resources.html" class="nav-tab-item ${activeKey === 'resources' ? 'active' : ''}" id="tab-resources">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-            </svg>
-            课件与教案
-          </a>
+        <nav class="nav-tabs" id="main-nav-tabs" aria-label="主导航">
+          <a href="index.html" class="nav-tab-item ${activeKey === 'index' ? 'active' : ''}" id="tab-home" ${activeKey === 'index' ? 'aria-current="page"' : ''}>首页</a>
+          <a href="uml.html" class="nav-tab-item ${activeKey === 'uml' ? 'active' : ''}" id="tab-uml" ${activeKey === 'uml' ? 'aria-current="page"' : ''}>UML 建模</a>
+          <a href="qa.html" class="nav-tab-item ${activeKey === 'qa' ? 'active' : ''}" id="tab-qa" ${activeKey === 'qa' ? 'aria-current="page"' : ''}>教材问答</a>
+          <a href="resources.html" class="nav-tab-item ${activeKey === 'resources' ? 'active' : ''}" id="tab-resources" ${activeKey === 'resources' ? 'aria-current="page"' : ''}>课件教案</a>
         </nav>
         <div class="health-status-container" id="health-indicator" title="每 30 秒轮询后端健康状态">
-          <div class="health-dot-wrap">
-            <span class="health-dot healthy" id="health-dot"></span>
-          </div>
+          <span class="health-dot healthy" id="health-dot" aria-hidden="true"></span>
           <span class="health-text" id="health-text">服务正常</span>
         </div>
       </div>

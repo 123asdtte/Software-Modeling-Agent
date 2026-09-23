@@ -71,11 +71,12 @@ button, input, select, textarea {
   padding: 0 var(--spacing-4);
 }
 
-/* 品牌区域 */
+/* 品牌区域（对齐参考稿：黑方块图标 + 平台名 + / + 当前模块名，单行式） */
 .brand-section {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
   text-decoration: none;
   user-select: none;
 }
@@ -85,32 +86,30 @@ button, input, select, textarea {
   height: 32px;
   background-color: var(--color-primary);
   color: var(--color-primary-foreground);
-  border-radius: 6px;
-  display: flex;
+  border-radius: var(--radius-input);
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18);
-}
-
-.brand-title-wrap {
-  display: flex;
-  flex-direction: column;
+  flex-shrink: 0;
 }
 
 .brand-title {
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text);
   line-height: 1.2;
+  white-space: nowrap;
 }
 
-.brand-subtitle {
-  font-size: 10px;
-  color: var(--color-text-secondary);
-  letter-spacing: 0.3px;
+.brand-sep {
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.brand-module {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
 }
 
 /* 顶栏导航（对齐参考稿 Topbar：药丸分段器，激活项实心黑块替代下划线） */

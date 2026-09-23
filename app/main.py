@@ -8,7 +8,7 @@ import logging
 import uuid
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -52,6 +52,15 @@ app.include_router(package_router)
 # M5：前端静态页面（static/ 目录，见 docs/03-技术方案/05_前端页面设计文档.md）
 _STATIC_DIR = resolve_project_path("static")
 app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
+
+
+@app.middleware("http")
+async def no_cache_frontend(request: Request, call_next):
+    """前端资源禁用启发式缓存：no-cache 保留 ETag 304 协商，保证发版即生效。"""
+    response = await call_next(request)
+    if request.url.path.startswith("/static") or request.url.path == "/":
+        response.headers["Cache-Control"] = "no-cache"
+    return response
 
 
 @app.get("/", include_in_schema=False)
