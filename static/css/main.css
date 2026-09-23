@@ -113,46 +113,44 @@ button, input, select, textarea {
   letter-spacing: 0.3px;
 }
 
-/* 导航链接项 */
+/* 顶栏导航（对齐参考稿 Topbar：药丸分段器，激活项实心黑块替代下划线） */
 .nav-tabs {
   display: flex;
   align-items: center;
-  height: 100%;
-  gap: var(--spacing-2);
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
 }
 
 .nav-tab-item {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 100%;
+  min-height: 32px;
   padding: 0 var(--spacing-3);
+  border-radius: calc(var(--radius-md) - 4px);
   color: var(--color-text-secondary);
   font-weight: 500;
   font-size: 13px;
-  position: relative;
   text-decoration: none;
-  transition: color var(--transition-fast);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
 .nav-tab-item:hover {
-  color: var(--color-primary);
+  background-color: var(--color-surface-subtle);
+  color: var(--color-text);
 }
 
 .nav-tab-item.active {
-  color: var(--color-primary);
+  background-color: var(--color-primary);
+  color: var(--color-primary-foreground);
   font-weight: 600;
 }
 
 .nav-tab-item.active::after {
-  content: "";
-  position: absolute;
-  bottom: -1px;
-  left: var(--spacing-3);
-  right: var(--spacing-3);
-  height: 2px;
-  background-color: var(--color-primary);
-  border-radius: 2px 2px 0 0;
+  content: none;
 }
 
 /* 服务健康状态指示点 */
@@ -257,22 +255,27 @@ button, input, select, textarea {
   margin-top: 4px;
 }
 
-/* 按钮规范 */
+/* 按钮规范（对齐参考稿 Button 组件：600 字重/12px 圆角/hover 仅变亮不叠影/focus-visible 外描边） */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  font-weight: 500;
+  font-weight: 600;
   font-size: var(--font-size-body);
-  border-radius: var(--radius-input);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
   border: 1px solid transparent;
   white-space: nowrap;
   user-select: none;
   text-decoration: none;
   padding: 8px 16px;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .btn:active {
@@ -288,7 +291,7 @@ button, input, select, textarea {
 .btn-primary:hover:not(:disabled) {
   background-color: var(--color-primary-hover);
   color: var(--color-primary-foreground);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
 }
 
 .btn-secondary {
@@ -475,13 +478,13 @@ button, input, select, textarea {
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  background-color: var(--color-primary-light);
-  color: var(--color-primary);
+  background-color: var(--color-primary);
+  color: var(--color-primary-foreground);
   border-radius: var(--radius-badge);
   font-size: var(--font-size-aux);
   font-weight: 600;
   margin-bottom: var(--spacing-3);
-  border: 1px solid var(--color-primary-border);
+  border: none;
 }
 
 .hero-title {
@@ -522,7 +525,7 @@ button, input, select, textarea {
 
 .ability-card:hover {
   transform: translateY(-2px);
-  border-color: var(--color-primary);
+  border-color: var(--color-border-strong, var(--brand-300));
   box-shadow: var(--shadow-card-hover);
 }
 
@@ -534,15 +537,15 @@ button, input, select, textarea {
 }
 
 .ability-card-icon-wrap {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  background-color: var(--color-primary-light);
-  color: var(--color-primary);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-input);
+  background-color: var(--color-brand-subtle, var(--brand-100));
+  color: var(--color-text);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .ability-card-title {
@@ -600,9 +603,9 @@ button, input, select, textarea {
 }
 
 .chip-item:hover {
-  background-color: var(--color-primary-light);
-  border-color: var(--color-primary-border);
-  color: var(--color-primary);
+  background-color: var(--color-surface-subtle);
+  border-color: var(--color-border-strong, var(--brand-300));
+  color: var(--color-text);
 }
 
 .char-counter {
@@ -928,10 +931,10 @@ button, input, select, textarea {
 }
 
 .uml-tab-btn.active {
-  background: var(--color-surface);
-  color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
   font-weight: 600;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-xs, 0 1px 1px 0 rgba(0, 0, 0, 0.04));
 }
 
 /* 质检报告筛选与搜索条 */
@@ -970,9 +973,9 @@ button, input, select, textarea {
 }
 
 .filter-pill.active {
-  background: var(--color-primary-light);
+  background: var(--color-primary);
   border-color: var(--color-primary);
-  color: var(--color-primary);
+  color: var(--color-primary-foreground);
   font-weight: 600;
 }
 
