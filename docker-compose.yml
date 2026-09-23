@@ -1,0 +1,24 @@
+# AI 教学智能体平台 —— 单容器部署
+# 用法：
+#   1. 复制 .env.example 为 .env 并填入 DEEPSEEK_API_KEY（TokenRhythm 平台密钥）
+#   2. 确认 tools/plantuml.jar 已放置（见 README「PlantUML 环境准备」）
+#   3. docker compose up -d --build
+#   4. 浏览器访问 http://localhost:8000/
+
+services:
+  edu-agent:
+    build: .
+    container_name: ai-education-agent
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # 首次启动 fastembed 从国内镜像下载 embedding 模型（约 90MB）
+      HF_ENDPOINT: https://hf-mirror.com
+    volumes:
+      # 生成产物（PPT/教案/UML 图片）持久化到宿主机
+      - ./outputs:/app/outputs
+      # 教材知识库索引可外挂（更新索引时无需重建镜像）
+      - ./app/knowledge_base/lightrag_index:/app/knowledge_base/lightrag_index
+    restart: unless-stopped

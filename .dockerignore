@@ -1,0 +1,20 @@
+# 构建上下文瘦身：不进镜像的开发/本地产物
+.venv/
+.git/
+.github/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# 本地产物（容器内自行生成）
+outputs/
+
+# 教材 docx/pdf 原件（提取稿已随索引进镜像，不需要原件）
+*.docx
+*.pdf
+
+# 密钥与本地配置（运行时注入）
+.env
+
+# 注意：tools/plantuml.jar 不排除——Dockerfile 需要将其 COPY 进镜像

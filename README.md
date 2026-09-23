@@ -111,6 +111,51 @@ tests/                   # 与 app 对应的测试
 | 多 Agent Supervisor（LangGraph） | ❌ 未实现 | 仅有架构设计 |
 | 数据库 / FAISS·Milvus | ❌ 未实现 | RAG 用 LightRAG 内置存储 |
 
+## Docker 部署（可选，服务器/演示机推荐）
+
+单容器包含：应用 + 前端页面 + PlantUML 渲染（JRE 17）+ 预构建教材知识库索引。
+
+### 前置条件
+
+1. Docker Desktop（Windows）或 Docker Engine（Linux）
+2. `tools/plantuml.jar` 已放置（见「PlantUML 环境准备」，jar 不进 Git，需手工下载）
+3. `.env` 已配置（`cp .env.example .env` 并填入 DEEPSEEK_API_KEY）
+
+### 构建与启动
+
+```bash
+docker compose up -d --build
+```
+
+首次启动说明：
+- 容器内 fastembed 会从国内镜像（HF_ENDPOINT=hf-mirror.com）自动下载 embedding 模型（约 90MB，一次性）
+- 教材知识库索引已预构建打进镜像（无需调 LLM 重建）；也可通过 compose 卷挂载外部索引
+
+### 访问
+
+- 前端页面：http://localhost:8000/
+- API 文档：http://localhost:8000/docs
+- 健康检查：http://localhost:8000/health
+
+### 镜像内容说明
+
+| 内容 | 来源 | 说明 |
+|---|---|---|
+| 教材知识库索引 | `app/knowledge_base/lightrag_index/`（预构建，9.9MB） | 容器启动**不需要**调用 LLM 重建 |
+
+> ⚠️ 干净 clone 注意：`lightrag_index/` 不进 Git（见 .gitignore）。新机器上先运行
+> `python -m app.knowledge_base.build`（需真实 LLM Key，一次性）生成索引，或从已有部署
+> 复制该目录，否则 `docker build` 的 COPY 步骤会因目录缺失失败。
+| PlantUML 渲染 | `tools/plantuml.jar`（v1.2026.8） | JRE 17 已装入镜像 |
+| embedding 模型 | 首次启动下载 | ~90MB，可通过卷挂载宿主机缓存跳过 |
+
+### 无 Docker 的传统部署
+
+```bash
+pip install -r requirements.txt        # Python 3.11+ 与 JRE 17 需预先安装
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
 ## 开发规范
 
 所有开发遵循 `docs/01-规范与流程/`：编码与命名规范、代码质量红线（禁止硬编码密钥、禁止提交 .env）、AI 辅助代码必须人工 review。
