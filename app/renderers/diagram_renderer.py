@@ -13,8 +13,10 @@
 
 import logging
 import subprocess
+import tempfile
 import uuid
 from enum import Enum
+from pathlib import Path
 from typing import Literal
 
 from pydantic import BaseModel
@@ -78,7 +80,9 @@ def render_plantuml_source(source: str, output_format: Literal["png", "svg"] = "
         return RenderResult(status=RenderStatus.SOURCE_ONLY, reason=reason)
 
     settings = get_settings()
-    work_dir = _resolve(settings.outputs_dir) / "uml"
+    # 临时文件放系统 temp：outputs/uml 只保留正式产物，避免长期堆积触发
+    # 批量删除保护（沙箱环境下 unlink 有安全钩子）；正式产物仍经 storage 原子写入 outputs/uml
+    work_dir = Path(tempfile.gettempdir()) / "edu_uml_render"
     work_dir.mkdir(parents=True, exist_ok=True)
 
     # uuid4 命名：并发请求互不碰撞，与进程/用户输入无关

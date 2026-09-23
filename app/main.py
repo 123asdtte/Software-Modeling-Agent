@@ -118,9 +118,13 @@ async def qa(req: QARequest) -> QAResponse:
     演示安全兜底：Semaphore 限并发 + wait_for 整体墙钟（LightRAG 内部
     单次 LLM 超时高达 240s，无整体超时会让请求长时间挂死）。
     """
-    try:
+
+    async def _run_qa():
         async with _qa_semaphore:
-            result = await asyncio.wait_for(build_qa_answer(req.question), timeout=settings.qa_timeout)
+            return await build_qa_answer(req.question)
+
+    try:
+        result = await asyncio.wait_for(_run_qa(), timeout=settings.qa_timeout)
     except asyncio.TimeoutError as exc:
         logger.warning("教材问答超时（>%ss）：%s", settings.qa_timeout, req.question[:50])
         raise HTTPException(status_code=504, detail=f"问答超时（>{settings.qa_timeout:.0f}s），请稍后重试") from exc
@@ -159,12 +163,12 @@ async def generate_ppt(req: PptRequest) -> dict:
     from app.chains.generation_chain import generate_ppt_deck_async
     from app.tools.ppt_generator import deck_to_pptx
 
-    try:
+    async def _run_ppt():
         async with _gen_semaphore:
-            deck = await asyncio.wait_for(
-                generate_ppt_deck_async(req.topic, req.minutes),
-                timeout=settings.gen_timeout,
-            )
+            return await generate_ppt_deck_async(req.topic, req.minutes)
+
+    try:
+        deck = await asyncio.wait_for(_run_ppt(), timeout=settings.gen_timeout)
     except asyncio.TimeoutError as exc:
         logger.warning("PPT 生成超时（>%ss）：%s", settings.gen_timeout, req.topic)
         raise HTTPException(status_code=504, detail=f"生成超时（>{settings.gen_timeout:.0f}s），请稍后重试") from exc
@@ -192,12 +196,12 @@ async def generate_lesson(req: LessonRequest) -> dict:
     from app.chains.generation_chain import generate_lesson_plan
     from app.tools.docx_exporter import lesson_to_docx, lesson_to_markdown
 
-    try:
+    async def _run_lesson():
         async with _gen_semaphore:
-            lesson = await asyncio.wait_for(
-                asyncio.to_thread(generate_lesson_plan, req.topic, req.minutes),
-                timeout=settings.gen_timeout,
-            )
+            return await asyncio.to_thread(generate_lesson_plan, req.topic, req.minutes)
+
+    try:
+        lesson = await asyncio.wait_for(_run_lesson(), timeout=settings.gen_timeout)
     except asyncio.TimeoutError as exc:
         logger.warning("教案生成超时（>%ss）：%s", settings.gen_timeout, req.topic)
         raise HTTPException(status_code=504, detail=f"生成超时（>{settings.gen_timeout:.0f}s），请稍后重试") from exc
