@@ -953,7 +953,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       entryDiv.innerHTML = `
         <div class="refactor-result-card">
-          <div style="font-weight: 600; color: #0f172a; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+          <div style="font-weight: 600; color: var(--color-text); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5">
               <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
@@ -965,22 +965,22 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
     } else if (type === "undo") {
       entryDiv.innerHTML = `
-        <div class="refactor-result-card" style="border-color: #bae6fd; background: #f0f9ff;">
-          <div style="font-weight: 600; color: #0284c7; margin-bottom: 3px; display: flex; align-items: center; gap: 6px;">
+        <div class="refactor-result-card" style="border-color: var(--color-border); background: var(--brand-50);">
+          <div style="font-weight: 600; color: var(--color-text); margin-bottom: 3px; display: flex; align-items: center; gap: 6px;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2">
               <polyline points="1 4 1 10 7 10"></polyline>
               <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
             </svg>
             版本已回滚
           </div>
-          <div style="color: #0369a1;">${escapeHtml(text)}</div>
+          <div style="color: var(--color-text-secondary);">${escapeHtml(text)}</div>
         </div>
       `;
     } else {
       entryDiv.innerHTML = `
-        <div class="refactor-result-card" style="border-color: #fca5a5; background: #fffaf0;">
-          <div style="font-weight: 600; color: #dc2626; margin-bottom: 3px;">重构未完成</div>
-          <div style="color: #991b1b;">${escapeHtml(text)}</div>
+        <div class="refactor-result-card" style="border-color: var(--color-error-border); background: var(--color-error-light);">
+          <div style="font-weight: 600; color: var(--color-error); margin-bottom: 3px;">重构未完成</div>
+          <div style="color: var(--color-error-strong);">${escapeHtml(text)}</div>
         </div>
       `;
     }

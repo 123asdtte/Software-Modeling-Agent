@@ -84,7 +84,7 @@ button, input, select, textarea {
   width: 32px;
   height: 32px;
   background-color: var(--color-primary);
-  color: #ffffff;
+  color: var(--color-primary-foreground);
   border-radius: 6px;
   display: flex;
   align-items: center;
@@ -92,7 +92,7 @@ button, input, select, textarea {
   font-weight: 700;
   font-size: 13px;
   letter-spacing: 0.5px;
-  box-shadow: 0 2px 4px rgba(26, 86, 219, 0.25);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18);
 }
 
 .brand-title-wrap {
@@ -281,14 +281,14 @@ button, input, select, textarea {
 
 .btn-primary {
   background-color: var(--color-primary);
-  color: #ffffff;
-  box-shadow: 0 1px 2px rgba(26, 86, 219, 0.2);
+  color: var(--color-primary-foreground);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-primary:hover:not(:disabled) {
   background-color: var(--color-primary-hover);
-  color: #ffffff;
-  box-shadow: 0 2px 6px rgba(26, 86, 219, 0.3);
+  color: var(--color-primary-foreground);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-secondary {
@@ -336,12 +336,12 @@ button, input, select, textarea {
 
 .form-input:focus, .form-textarea:focus, .form-select:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.12);
+  box-shadow: var(--focus-ring);
 }
 
 .form-input.error, .form-textarea.error {
   border-color: var(--color-error);
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+  box-shadow: var(--focus-ring-error);
 }
 
 .form-textarea {
@@ -702,41 +702,41 @@ button, input, select, textarea {
 
 /* 错误级别悬停高亮：红色侧边条与柔和红底 */
 .review-table tbody tr.issue-row-error:hover {
-  background-color: #fef2f2 !important;
+  background-color: var(--color-error-light) !important;
 }
 .review-table tbody tr.issue-row-error:hover td:first-child {
   border-left-color: var(--color-error);
 }
 .review-table tbody tr.issue-row-error:hover code {
-  background-color: #fee2e2;
-  color: #991b1b;
-  border-color: #fca5a5;
+  background-color: var(--color-error-muted);
+  color: var(--color-error-strong);
+  border-color: var(--color-error-border);
 }
 
 /* 警告级别悬停高亮：琥珀黄色侧边条与柔和黄底 */
 .review-table tbody tr.issue-row-warning:hover {
-  background-color: #fffbeb !important;
+  background-color: var(--color-warning-light) !important;
 }
 .review-table tbody tr.issue-row-warning:hover td:first-child {
   border-left-color: var(--color-warning);
 }
 .review-table tbody tr.issue-row-warning:hover code {
-  background-color: #fef3c7;
-  color: #92400e;
-  border-color: #fde68a;
+  background-color: var(--color-warning-muted);
+  color: var(--color-warning-strong);
+  border-color: var(--color-warning-border);
 }
 
 /* 提示/信息级别悬停高亮：科技蓝侧边条与柔和蓝底 */
 .review-table tbody tr.issue-row-info:hover {
-  background-color: #f0f9ff !important;
+  background-color: var(--color-info-light) !important;
 }
 .review-table tbody tr.issue-row-info:hover td:first-child {
   border-left-color: var(--color-info);
 }
 .review-table tbody tr.issue-row-info:hover code {
-  background-color: #e0f2fe;
-  color: #0369a1;
-  border-color: #bae6fd;
+  background-color: var(--color-info-light);
+  color: var(--color-info);
+  border-color: var(--color-info-border);
 }
 
 .review-table code {
@@ -782,11 +782,11 @@ button, input, select, textarea {
   flex-shrink: 0;
   font-size: 18px;
 }
-.kpi-icon-blue { background: #eff6ff; color: #1d4ed8; }
-.kpi-icon-purple { background: #faf5ff; color: #7e22ce; }
-.kpi-icon-green { background: #f0fdf4; color: #15803d; }
-.kpi-icon-amber { background: #fffbeb; color: #b45309; }
-.kpi-icon-emerald { background: #ecfdf5; color: #047857; }
+.kpi-icon-blue { background: var(--brand-100); color: var(--brand-800); }
+.kpi-icon-purple { background: var(--brand-100); color: var(--brand-700); }
+.kpi-icon-green { background: var(--color-success-light); color: var(--color-success); }
+.kpi-icon-amber { background: var(--color-warning-light); color: var(--color-warning); }
+.kpi-icon-emerald { background: var(--color-success-light); color: var(--color-success); }
 
 .kpi-content {
   display: flex;
@@ -1051,8 +1051,8 @@ button, input, select, textarea {
   border-radius: 3px;
   font-weight: 600;
 }
-.actor-role-primary { background: #dbeafe; color: #1e40af; }
-.actor-role-secondary { background: #f3e8ff; color: #6b21a8; }
+.actor-role-primary { background: var(--brand-100); color: var(--brand-800); }
+.actor-role-secondary { background: var(--brand-50); color: var(--brand-600); border: 1px solid var(--brand-200); }
 
 .usecase-element-table {
   width: 100%;
@@ -1086,7 +1086,7 @@ button, input, select, textarea {
   position: absolute;
   top: 8px;
   right: 8px;
-  background: rgba(248, 250, 252, 0.9);
+  background: rgba(250, 250, 250, 0.9);
   border: 1px solid var(--color-border);
   border-radius: 4px;
   padding: 2px 7px;
@@ -1115,7 +1115,7 @@ button, input, select, textarea {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(15, 23, 42, 0.9);
+  background: rgba(10, 10, 10, 0.92);
   backdrop-filter: blur(8px);
   z-index: 100000;
   display: flex;
@@ -1150,7 +1150,7 @@ button, input, select, textarea {
   background: #ffffff;
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-overlay);
 }
 
 /* ==========================================================================
@@ -1162,7 +1162,7 @@ button, input, select, textarea {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(15, 23, 42, 0.55);
+  background-color: rgba(10, 10, 10, 0.6);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -1321,13 +1321,13 @@ button, input, select, textarea {
 .code-details-body {
   padding: var(--spacing-4);
   position: relative;
-  background-color: #1e293b;
+  background-color: var(--dark-panel);
 }
 
 .code-block {
   font-family: var(--font-mono);
   font-size: 12px;
-  color: #e2e8f0;
+  color: var(--dark-text-secondary);
   line-height: 1.5;
   white-space: pre-wrap;
   overflow-x: auto;
@@ -1647,8 +1647,8 @@ button, input, select, textarea {
 .global-progress-bar {
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, var(--color-primary) 0%, #2563eb 45%, #60a5fa 85%, #93c5fd 100%);
-  box-shadow: 0 0 10px rgba(26, 86, 219, 0.65), 0 0 5px rgba(96, 165, 250, 0.9);
+  background: linear-gradient(90deg, var(--brand-900) 0%, var(--brand-700) 45%, var(--brand-500) 85%, var(--brand-300) 100%);
+  box-shadow: 0 0 8px rgba(24, 24, 27, 0.35);
   transition: width 0.35s cubic-bezier(0.1, 0.85, 0.25, 1);
   position: relative;
   border-radius: 0 2px 2px 0;
@@ -1663,7 +1663,7 @@ button, input, select, textarea {
   bottom: 0;
   width: 90px;
   background: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.8) 75%, #ffffff 100%);
-  box-shadow: 0 0 10px #93c5fd, 0 0 4px #ffffff;
+  box-shadow: 0 0 8px rgba(24, 24, 27, 0.3), 0 0 4px #ffffff;
   animation: progress-pulse 1s infinite alternate;
 }
 
@@ -1674,12 +1674,12 @@ button, input, select, textarea {
 
 /* 异常失败状态红调指示 */
 .global-progress-container.is-error .global-progress-bar {
-  background: linear-gradient(90deg, var(--color-error) 0%, #ef4444 60%, #fca5a5 100%);
-  box-shadow: 0 0 10px rgba(220, 38, 38, 0.65);
+  background: linear-gradient(90deg, var(--color-error) 0%, var(--color-error) 60%, var(--color-error-border) 100%);
+  box-shadow: 0 0 8px rgba(220, 38, 38, 0.4);
 }
 
 .global-progress-container.is-error .global-progress-bar::after {
-  box-shadow: 0 0 10px #fca5a5, 0 0 4px #ffffff;
+  box-shadow: 0 0 8px rgba(220, 38, 38, 0.35), 0 0 4px #ffffff;
 }
 
 /* 视口右上角精美悬浮状态胶囊（用于长耗时任务如 PPT/教案反馈） */
@@ -1690,8 +1690,8 @@ button, input, select, textarea {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background-color: rgba(15, 23, 42, 0.88);
-  color: #f8fafc;
+  background-color: rgba(10, 10, 10, 0.92);
+  color: #fafafa;
   padding: 5px 12px;
   border-radius: var(--radius-badge);
   font-size: 12px;
@@ -1717,13 +1717,13 @@ button, input, select, textarea {
   width: 12px;
   height: 12px;
   border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #60a5fa;
+  border-top-color: var(--brand-300);
   border-radius: 50%;
   animation: progress-spin 0.8s linear infinite;
 }
 
 .global-progress-container.is-error .progress-spinner {
-  border-top-color: #fca5a5;
+  border-top-color: var(--color-error-border);
 }
 
 @keyframes progress-spin {
@@ -1737,7 +1737,7 @@ button, input, select, textarea {
 .progress-timer {
   font-family: var(--font-mono);
   font-size: 11px;
-  color: #93c5fd;
+  color: var(--dark-text-secondary);
   background: rgba(255, 255, 255, 0.12);
   padding: 1px 6px;
   border-radius: 4px;
@@ -1791,7 +1791,7 @@ button, input, select, textarea {
 
 .history-count-badge {
   background: var(--color-primary);
-  color: #ffffff;
+  color: var(--color-primary-foreground);
   font-size: 11px;
   font-weight: 700;
   padding: 1px 6px;
@@ -1833,13 +1833,13 @@ button, input, select, textarea {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(15, 23, 42, 0.94);
+  background: rgba(10, 10, 10, 0.94);
   backdrop-filter: blur(8px);
   z-index: 999999;
   display: none;
   flex-direction: column;
   justify-content: space-between;
-  color: #ffffff;
+  color: var(--color-primary-foreground);
   padding: 24px 36px;
   box-sizing: border-box;
 }
@@ -1866,7 +1866,7 @@ button, input, select, textarea {
 }
 
 .slide-canvas-card {
-  background: #1e293b;
+  background: var(--dark-panel-raised);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 16px;
   width: 100%;
@@ -1893,7 +1893,7 @@ button, input, select, textarea {
 .slide-heading-text {
   font-size: 26px;
   font-weight: 800;
-  color: #f8fafc;
+  color: #fafafa;
   letter-spacing: -0.5px;
 }
 
@@ -1909,7 +1909,7 @@ button, input, select, textarea {
 .slide-content-bullets li {
   font-size: 18px;
   line-height: 1.6;
-  color: #cbd5e1;
+  color: var(--dark-text-secondary);
   display: flex;
   align-items: flex-start;
   gap: 12px;
@@ -1918,18 +1918,18 @@ button, input, select, textarea {
 .slide-bullet-dot {
   width: 8px;
   height: 8px;
-  background: #3b82f6;
+  background: var(--brand-300);
   border-radius: 50%;
   margin-top: 10px;
   flex-shrink: 0;
 }
 
 .slide-speaker-note-box {
-  background: rgba(30, 41, 59, 0.85);
-  border: 1px solid #3b82f6;
+  background: rgba(39, 39, 42, 0.85);
+  border: 1px solid var(--brand-600);
   border-radius: 8px;
   padding: 12px 16px;
-  color: #93c5fd;
+  color: var(--dark-text-secondary);
   font-size: 14px;
   line-height: 1.5;
   display: flex;
@@ -1953,7 +1953,7 @@ button, input, select, textarea {
 .btn-slide-nav {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #ffffff;
+  color: var(--color-primary-foreground);
   padding: 8px 16px;
   border-radius: 8px;
   font-size: 14px;
@@ -2009,10 +2009,10 @@ button, input, select, textarea {
   position: relative;
 }
 
-.time-seg-1 { background: #3b82f6; }
-.time-seg-2 { background: #10b981; }
-.time-seg-3 { background: #f59e0b; }
-.time-seg-4 { background: #8b5cf6; }
+.time-seg-1 { background: var(--chart-1); }
+.time-seg-2 { background: var(--chart-3); }
+.time-seg-3 { background: var(--chart-4); }
+.time-seg-4 { background: var(--chart-2); }
 
 .time-legend-row {
   display: flex;
@@ -2140,8 +2140,8 @@ button, input, select, textarea {
 }
 
 .pitfall-card {
-  background: #fffbeb;
-  border: 1px solid #fde68a;
+  background: var(--color-warning-light);
+  border: 1px solid var(--color-warning-border);
   border-radius: var(--radius-input);
   padding: 12px 14px;
 }
@@ -2149,7 +2149,7 @@ button, input, select, textarea {
 .pitfall-title {
   font-size: 13px;
   font-weight: 700;
-  color: #92400e;
+  color: var(--color-warning-strong);
   margin-bottom: 6px;
   display: flex;
   align-items: center;
@@ -2158,7 +2158,7 @@ button, input, select, textarea {
 
 .pitfall-solution {
   font-size: 12px;
-  color: #78350f;
+  color: var(--color-warning-stronger);
   line-height: 1.5;
 }
 
@@ -2308,7 +2308,7 @@ button, input, select, textarea {
   left: 0;
   width: 4px;
   height: 100%;
-  background: linear-gradient(to bottom, var(--color-primary), #8b5cf6);
+  background: linear-gradient(to bottom, var(--brand-900), var(--brand-600));
 }
 
 .package-quality-banner {
@@ -2329,7 +2329,7 @@ button, input, select, textarea {
   align-items: baseline;
   gap: 4px;
   background: rgba(16, 185, 129, 0.1);
-  color: #059669;
+  color: var(--color-success);
   border: 1px solid rgba(16, 185, 129, 0.25);
   padding: 4px 12px;
   border-radius: 9999px;
@@ -2386,12 +2386,12 @@ button, input, select, textarea {
 
 .package-suite-item.tasksheet .package-suite-icon {
   background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  color: var(--color-success);
 }
 
 .package-suite-item.lesson .package-suite-icon {
   background: rgba(124, 58, 237, 0.1);
-  color: #8b5cf6;
+  color: var(--color-text-secondary);
 }
 
 .package-suite-title {
@@ -2494,7 +2494,7 @@ button, input, select, textarea {
   font-weight: 500;
   color: var(--color-text-secondary);
   padding: 1px 6px;
-  background: #f1f5f9;
+  background: var(--color-surface-subtle);
   border-radius: 4px;
 }
 
@@ -2505,7 +2505,7 @@ button, input, select, textarea {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: #f8fafc;
+  background: var(--color-surface-muted, var(--brand-50));
   font-family: inherit;
 }
 
@@ -2523,7 +2523,7 @@ button, input, select, textarea {
 .refactor-guide-title {
   font-weight: 600;
   font-size: 13px;
-  color: #0f172a;
+  color: var(--color-text);
   margin-bottom: 6px;
   display: flex;
   align-items: center;
@@ -2554,9 +2554,9 @@ button, input, select, textarea {
   gap: 8px;
   font-size: 12.5px;
   font-weight: 600;
-  color: #1e3a8a;
-  background: #eff6ff;
-  border-left: 3px solid #2563eb;
+  color: var(--brand-800);
+  background: var(--brand-100);
+  border-left: 3px solid var(--brand-700);
   padding: 6px 10px;
   border-radius: 0 4px 4px 0;
 }
@@ -2564,7 +2564,7 @@ button, input, select, textarea {
 .refactor-directive-prefix {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 11px;
-  color: #2563eb;
+  color: var(--brand-700);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -2576,7 +2576,7 @@ button, input, select, textarea {
   border-radius: 6px;
   font-size: 12.5px;
   line-height: 1.55;
-  color: #334155;
+  color: var(--brand-700);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
@@ -2586,9 +2586,9 @@ button, input, select, textarea {
   gap: 6px;
   padding: 2px 7px;
   margin-top: 6px;
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #166534;
+  background: var(--color-success-light);
+  border: 1px solid var(--color-success-border);
+  color: var(--color-success);
   border-radius: 4px;
   font-size: 11px;
   font-weight: 600;
@@ -2615,21 +2615,21 @@ button, input, select, textarea {
 
 .copilot-chip {
   background: #ffffff;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   padding: 4px 9px;
   font-size: 11.5px;
   font-weight: 500;
-  color: #334155;
+  color: var(--brand-700);
   cursor: pointer;
   transition: all var(--transition-fast);
   white-space: nowrap;
 }
 
 .copilot-chip:hover {
-  background: #eff6ff;
-  border-color: #93c5fd;
-  color: #1d4ed8;
+  background: var(--brand-100);
+  border-color: var(--dark-text-secondary);
+  color: var(--brand-900);
 }
 
 /* 输入表单 */
