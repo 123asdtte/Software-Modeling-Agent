@@ -17,10 +17,12 @@ from typing import Literal
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field, model_validator
 
+from app.chains.uml_adjust import adjust_usecase_model
 from app.chains.uml_chain import generate_usecase_model
 from app.config.settings import get_settings
 from app.core.structured_output import StructuredOutputError
 from app.models.review import ReviewReport
+from app.models.uml import UseCaseModel
 from app.renderers.diagram_renderer import RenderStatus, render_plantuml_source
 from app.renderers.plantuml import render_usecase_plantuml
 from app.rules.usecase_rules import check_usecase_model
@@ -137,3 +139,40 @@ async def generate_usecase(req: UmlUseCaseRequest) -> UmlUseCaseResponse:
         review_report=report,
         render=render_info,
     )
+
+
+class UmlAdjustRequest(BaseModel):
+    """对话式修正请求体（前端 Copilot 面板）。"""
+
+    instruction: str = Field(..., min_length=2, max_length=500)
+    current_plantuml: str = Field("", max_length=8000)
+    current_model: dict
+    format: Literal["png", "svg"] = "png"
+
+
+@router.post("/chat-adjust")
+async def chat_adjust(req: UmlAdjustRequest) -> dict:
+    """对话式修正：当前模型 + 指令 → 修正后模型 + 重渲染 + 重质检。"""
+    try:
+        current = UseCaseModel.model_validate(req.current_model)
+    except Exception as exc:  # noqa: BLE001 - 当前模型非法（契约变更/篡改）
+        logger.warning("chat-adjust 当前模型校验失败：%s", str(exc)[:120])
+        raise HTTPException(status_code=422, detail="当前模型数据无效，请重新生成后再修正") from exc
+
+    try:
+        async with _uml_semaphore:
+            result = await asyncio.wait_for(
+                adjust_usecase_model(current, req.instruction.strip(), req.format),
+                timeout=_settings.uml_timeout,
+            )
+    except asyncio.TimeoutError as exc:
+        logger.warning("UML 对话修正超时（>%ss）", _settings.uml_timeout)
+        raise HTTPException(status_code=504, detail="修正超时，请稍后重试") from exc
+    except StructuredOutputError as exc:
+        logger.exception("UML 对话修正结构化失败：%s", exc)
+        raise HTTPException(status_code=502, detail="模型未能完成修正，请换个说法重试") from exc
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("UML 对话修正异常")
+        raise HTTPException(status_code=502, detail="修正失败，请稍后重试") from exc
+
+    return result

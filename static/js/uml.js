@@ -38,12 +38,25 @@ document.addEventListener("DOMContentLoaded", () => {
   const sourceOnlyBox = document.getElementById("source-only-box");
   const sourceOnlyReason = document.getElementById("source-only-reason");
   const downloadBtn = document.getElementById("download-btn");
+  const btnOpenCopilot = document.getElementById("btn-open-copilot");
 
-  // 标签页控制
+  // 标签页控制 (AI 对话调优、质检报告、要素清单)
+  const tabBtnCopilot = document.getElementById("tab-btn-copilot");
   const tabBtnReview = document.getElementById("tab-btn-review");
   const tabBtnElements = document.getElementById("tab-btn-elements");
+  const viewAiCopilot = document.getElementById("view-ai-copilot");
   const viewReviewReport = document.getElementById("view-review-report");
   const viewModelElements = document.getElementById("view-model-elements");
+
+  // AI Copilot 在线调优要素
+  const copilotChatHistory = document.getElementById("copilot-chat-history");
+  const copilotInputForm = document.getElementById("copilot-input-form");
+  const copilotInputText = document.getElementById("copilot-input-text");
+  const copilotSendBtn = document.getElementById("copilot-send-btn");
+  const copilotUndoBtn = document.getElementById("copilot-undo-btn");
+  const copilotClearBtn = document.getElementById("copilot-clear-btn");
+  const copilotQuickChips = document.getElementById("copilot-quick-chips");
+  let previousUmlState = null;
 
   // 质检报告与筛选
   const reviewBadgeContainer = document.getElementById("review-badge-container");
@@ -63,8 +76,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // PlantUML 源码与导出
   const plantumlCode = document.getElementById("plantuml-code");
+  const plantumlEditor = document.getElementById("plantuml-editor");
+  const toggleEditorBtn = document.getElementById("toggle-editor-btn");
+  const reRenderPumlBtn = document.getElementById("re-render-puml-btn");
+  const resetPumlBtn = document.getElementById("reset-puml-btn");
   const copySourceBtn = document.getElementById("copy-source-btn");
   const downloadPumlBtn = document.getElementById("download-puml-btn");
+
+  // 全案协同与快速直连
+  const skipConfirmCheckbox = document.getElementById("skip-confirm-checkbox");
+  const btnExportToPackage = document.getElementById("btn-export-to-teaching-package");
+  const kpiRelationsCard = document.getElementById("kpi-relations-card");
+  const kpiRelationsCount = document.getElementById("kpi-relations-count");
+  const kpiRelationsDetail = document.getElementById("kpi-relations-detail");
+  let originalPumlSource = "";
+
+  if (skipConfirmCheckbox) {
+    try {
+      const savedPref = localStorage.getItem("uml_skip_confirm");
+      if (savedPref === "true") {
+        skipConfirmCheckbox.checked = true;
+      }
+    } catch (_) {}
+    skipConfirmCheckbox.addEventListener("change", () => {
+      try {
+        localStorage.setItem("uml_skip_confirm", skipConfirmCheckbox.checked ? "true" : "false");
+      } catch (_) {}
+    });
+  }
 
   // 二次确认弹窗 DOM
   const confirmModal = document.getElementById("uml-confirm-modal");
@@ -201,30 +240,66 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 4. 双标签页切换逻辑
-  if (tabBtnReview && tabBtnElements) {
-    tabBtnReview.addEventListener("click", () => {
-      tabBtnReview.classList.add("active");
-      tabBtnReview.setAttribute("aria-selected", "true");
-      tabBtnElements.classList.remove("active");
-      tabBtnElements.setAttribute("aria-selected", "false");
-      viewReviewReport.style.display = "block";
-      viewModelElements.style.display = "none";
-    });
+  // 4. 三标签页切换逻辑 (AI 对话调优 / 规范质检报告 / 模型要素清单)
+  function switchReviewTab(tabName) {
+    // 隐藏所有标签视图
+    if (viewAiCopilot) viewAiCopilot.style.display = "none";
+    if (viewReviewReport) viewReviewReport.style.display = "none";
+    if (viewModelElements) viewModelElements.style.display = "none";
 
-    tabBtnElements.addEventListener("click", () => {
-      tabBtnElements.classList.add("active");
-      tabBtnElements.setAttribute("aria-selected", "true");
+    // 取消所有标签高亮
+    if (tabBtnCopilot) {
+      tabBtnCopilot.classList.remove("active");
+      tabBtnCopilot.setAttribute("aria-selected", "false");
+    }
+    if (tabBtnReview) {
       tabBtnReview.classList.remove("active");
       tabBtnReview.setAttribute("aria-selected", "false");
-      viewReviewReport.style.display = "none";
+    }
+    if (tabBtnElements) {
+      tabBtnElements.classList.remove("active");
+      tabBtnElements.setAttribute("aria-selected", "false");
+    }
+
+    if (tabName === "copilot" && viewAiCopilot && tabBtnCopilot) {
+      tabBtnCopilot.classList.add("active");
+      tabBtnCopilot.setAttribute("aria-selected", "true");
+      viewAiCopilot.style.display = "flex";
+      if (copilotInputText) setTimeout(() => copilotInputText.focus(), 80);
+    } else if (tabName === "elements" && viewModelElements && tabBtnElements) {
+      tabBtnElements.classList.add("active");
+      tabBtnElements.setAttribute("aria-selected", "true");
       viewModelElements.style.display = "flex";
+    } else if (viewReviewReport && tabBtnReview) {
+      tabBtnReview.classList.add("active");
+      tabBtnReview.setAttribute("aria-selected", "true");
+      viewReviewReport.style.display = "block";
+    }
+  }
+
+  if (tabBtnCopilot) {
+    tabBtnCopilot.addEventListener("click", () => switchReviewTab("copilot"));
+  }
+  if (tabBtnReview) {
+    tabBtnReview.addEventListener("click", () => switchReviewTab("review"));
+  }
+  if (tabBtnElements) {
+    tabBtnElements.addEventListener("click", () => switchReviewTab("elements"));
+  }
+
+  if (btnOpenCopilot) {
+    btnOpenCopilot.addEventListener("click", () => {
+      switchReviewTab("copilot");
+      const reviewCard = document.getElementById("uml-review-card");
+      if (reviewCard) reviewCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
     });
   }
 
   // 5. 复制代码与下载源码功能
   copySourceBtn.addEventListener("click", async () => {
-    const code = plantumlCode.textContent;
+    const code = (plantumlEditor && plantumlEditor.style.display === "block")
+      ? plantumlEditor.value
+      : (plantumlCode ? plantumlCode.textContent : "");
     if (!code) return;
 
     let success = false;
@@ -271,7 +346,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (downloadPumlBtn) {
     downloadPumlBtn.addEventListener("click", () => {
-      const code = plantumlCode.textContent;
+      const code = (plantumlEditor && plantumlEditor.style.display === "block")
+        ? plantumlEditor.value
+        : (plantumlCode ? plantumlCode.textContent : "");
       if (!code) return;
       const blob = new Blob([code], { type: "text/plain;charset=utf-8" });
       const url = URL.createObjectURL(blob);
@@ -314,6 +391,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (rawVal.length > 3000) {
       showError("需求内容不能超过 3000 字");
       textarea.focus();
+      return;
+    }
+
+    // 若用户勾选了跳过确认弹窗，直接发起生成
+    if (skipConfirmCheckbox && skipConfirmCheckbox.checked) {
+      executeGenerateUml();
       return;
     }
 
@@ -440,8 +523,17 @@ document.addEventListener("DOMContentLoaded", () => {
     // 8.4 渲染模型要素清单（参与者与用例表格）
     renderModelElements(currentModelData);
 
-    // 8.5 底部 PlantUML 源码展示
-    plantumlCode.textContent = data.plantuml || "";
+    // 8.5 底部 PlantUML 源码展示与缓存
+    originalPumlSource = data.plantuml || "";
+    plantumlCode.textContent = originalPumlSource;
+    if (plantumlEditor) {
+      plantumlEditor.value = originalPumlSource;
+    }
+
+    // 8.6 激活画布右上角「AI 对话调整」快捷按钮
+    if (btnOpenCopilot) {
+      btnOpenCopilot.style.display = "inline-flex";
+    }
   }
 
   // 8.1 KPI 指标条计算与渲染
@@ -470,6 +562,17 @@ document.addEventListener("DOMContentLoaded", () => {
     // 核心用例
     if (kpiUsecasesCount) {
       kpiUsecasesCount.textContent = `${usecases.length} 个`;
+    }
+
+    // 高级规约关系统计
+    const puml = data.plantuml || "";
+    const includes = (puml.match(/<<include>>/gi) || []).length;
+    const extendsCnt = (puml.match(/<<extend>>/gi) || []).length;
+    if (kpiRelationsCount) {
+      kpiRelationsCount.textContent = `${includes + extendsCnt} 条关系`;
+    }
+    if (kpiRelationsDetail) {
+      kpiRelationsDetail.textContent = `${includes} include · ${extendsCnt} extend`;
     }
 
     // 规范达标率
@@ -715,6 +818,345 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // 8.5 点击 KPI 卡片快速联动切换选项卡
+  const kpiScoreCard = document.getElementById("kpi-score-card");
+  if (kpiScoreCard && tabBtnReview) {
+    kpiScoreCard.addEventListener("click", () => {
+      tabBtnReview.click();
+      const reviewCard = document.getElementById("uml-review-card");
+      if (reviewCard) reviewCard.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
+  const kpiActorsCard = document.getElementById("kpi-actors-card");
+  const kpiUsecasesCard = document.getElementById("kpi-usecases-card");
+  if (kpiActorsCard && tabBtnElements) {
+    kpiActorsCard.addEventListener("click", () => {
+      tabBtnElements.click();
+      const reviewCard = document.getElementById("uml-review-card");
+      if (reviewCard) reviewCard.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+  if (kpiUsecasesCard && tabBtnElements) {
+    kpiUsecasesCard.addEventListener("click", () => {
+      tabBtnElements.click();
+      const reviewCard = document.getElementById("uml-review-card");
+      if (reviewCard) reviewCard.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+  if (kpiRelationsCard && tabBtnElements) {
+    kpiRelationsCard.addEventListener("click", () => {
+      tabBtnElements.click();
+      const reviewCard = document.getElementById("uml-review-card");
+      if (reviewCard) reviewCard.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
+  // 8.6 跨页联动：一键联产教学全案（课件·教案·工单）
+  if (btnExportToPackage) {
+    btnExportToPackage.addEventListener("click", () => {
+      const sys = currentModelData?.system || "软件工程业务系统";
+      const topic = `${sys}设计与建模`;
+      try {
+        localStorage.setItem("pending_package_topic", topic);
+        window.location.href = "/resources.html?tab=package";
+      } catch (e) {
+        window.location.href = "/resources.html?tab=package";
+      }
+    });
+  }
+
+  // 8.7 在线编辑与实时重绘 PlantUML
+  if (toggleEditorBtn && plantumlEditor && plantumlCode) {
+    toggleEditorBtn.addEventListener("click", () => {
+      const isEditing = plantumlEditor.style.display === "block";
+      if (isEditing) {
+        plantumlEditor.style.display = "none";
+        plantumlCode.style.display = "block";
+        if (reRenderPumlBtn) reRenderPumlBtn.style.display = "none";
+        if (resetPumlBtn) resetPumlBtn.style.display = "none";
+        toggleEditorBtn.textContent = "✏️ 开启在线编辑";
+      } else {
+        plantumlEditor.value = plantumlCode.textContent || "";
+        plantumlEditor.style.display = "block";
+        plantumlCode.style.display = "none";
+        if (reRenderPumlBtn) reRenderPumlBtn.style.display = "inline-flex";
+        if (resetPumlBtn) resetPumlBtn.style.display = "inline-flex";
+        toggleEditorBtn.textContent = "👁️ 退出编辑视图";
+        plantumlEditor.focus();
+      }
+    });
+  }
+
+  if (resetPumlBtn && plantumlEditor && plantumlCode) {
+    resetPumlBtn.addEventListener("click", () => {
+      if (originalPumlSource) {
+        plantumlEditor.value = originalPumlSource;
+        plantumlCode.textContent = originalPumlSource;
+      }
+    });
+  }
+
+  if (reRenderPumlBtn && plantumlEditor) {
+    reRenderPumlBtn.addEventListener("click", async () => {
+      const editedCode = plantumlEditor.value.trim();
+      if (!editedCode) {
+        showError("PlantUML 源码不能为空");
+        return;
+      }
+      plantumlCode.textContent = editedCode;
+
+      reRenderPumlBtn.disabled = true;
+      reRenderPumlBtn.textContent = "重绘中…";
+      hideError();
+
+      const formatVal = formatSelect.value;
+      const isSourceOnly = formatVal === "source_only";
+      const payload = {
+        requirement: textarea.value.trim() || "自定模型重绘",
+        plantuml_override: editedCode,
+        render: !isSourceOnly,
+        format: isSourceOnly ? "png" : formatVal,
+      };
+
+      try {
+        const data = await apiPost("/v1/uml/usecase", payload, { timeoutMs: 120000 });
+        renderResults(data);
+      } catch (err) {
+        showError("重绘失败：" + (err.message || "服务异常"));
+      } finally {
+        reRenderPumlBtn.disabled = false;
+        reRenderPumlBtn.textContent = "🔄 立即重绘当前代码";
+      }
+    });
+  }
+
+  // 8.8 架构增量重构控制台日志流 (Model Refactoring Audit Stream)
+  function appendRefactorLog(type, text, diffSummary) {
+    if (!copilotChatHistory) return;
+    const entryDiv = document.createElement("div");
+    entryDiv.className = "refactor-entry";
+
+    if (type === "directive") {
+      entryDiv.innerHTML = `
+        <div class="refactor-directive-bar">
+          <span class="refactor-directive-prefix">> 重构指令</span>
+          <span>${escapeHtml(text)}</span>
+        </div>
+      `;
+    } else if (type === "success") {
+      let diffHtml = "";
+      if (diffSummary) {
+        diffHtml = `<div class="refactor-diff-tag">变更：${escapeHtml(diffSummary)}</div>`;
+      }
+      entryDiv.innerHTML = `
+        <div class="refactor-result-card">
+          <div style="font-weight: 600; color: #0f172a; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            重构执行完成
+          </div>
+          <div>${escapeHtml(text)}</div>
+          ${diffHtml}
+        </div>
+      `;
+    } else if (type === "undo") {
+      entryDiv.innerHTML = `
+        <div class="refactor-result-card" style="border-color: #bae6fd; background: #f0f9ff;">
+          <div style="font-weight: 600; color: #0284c7; margin-bottom: 3px; display: flex; align-items: center; gap: 6px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2">
+              <polyline points="1 4 1 10 7 10"></polyline>
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+            </svg>
+            版本已回滚
+          </div>
+          <div style="color: #0369a1;">${escapeHtml(text)}</div>
+        </div>
+      `;
+    } else {
+      entryDiv.innerHTML = `
+        <div class="refactor-result-card" style="border-color: #fca5a5; background: #fffaf0;">
+          <div style="font-weight: 600; color: #dc2626; margin-bottom: 3px;">重构未完成</div>
+          <div style="color: #991b1b;">${escapeHtml(text)}</div>
+        </div>
+      `;
+    }
+
+    copilotChatHistory.appendChild(entryDiv);
+    copilotChatHistory.scrollTop = copilotChatHistory.scrollHeight;
+  }
+
+  async function handleCopilotAdjust(instruction) {
+    const instr = (instruction || "").trim();
+    if (!instr) return;
+
+    if (!currentModelData || !plantumlCode || !plantumlCode.textContent) {
+      appendRefactorLog("error", "请先在上方输入业务需求并点击「生成用例图」，再执行架构重构。");
+      return;
+    }
+
+    // 保存上一个版本以便一键回滚
+    previousUmlState = {
+      model: JSON.parse(JSON.stringify(currentModelData)),
+      plantuml: plantumlCode.textContent,
+      issues: cachedIssues ? JSON.parse(JSON.stringify(cachedIssues)) : [],
+      imageUrl: downloadBtn ? downloadBtn.href : "",
+    };
+    if (copilotUndoBtn) copilotUndoBtn.style.display = "inline-flex";
+
+    // 记录重构指令
+    appendRefactorLog("directive", instr);
+
+    if (copilotSendBtn) {
+      copilotSendBtn.disabled = true;
+      copilotSendBtn.innerHTML = `<span>重构中…</span>`;
+    }
+    if (copilotInputText) {
+      copilotInputText.disabled = true;
+    }
+
+    try {
+      const formatVal = formatSelect ? formatSelect.value : "svg";
+      const payload = {
+        instruction: instr,
+        current_plantuml: plantumlCode.textContent,
+        current_model: currentModelData,
+        format: formatVal === "source_only" ? "png" : formatVal,
+      };
+
+      const res = await apiPost("/v1/uml/chat-adjust", payload, { timeoutMs: 90000 });
+      if (res && res.success) {
+        appendRefactorLog("success", res.reply || "已完成模型重构演进。", res.diff_summary);
+
+        // 更新并重绘全界面视图
+        const updatedData = {
+          diagram_type: "usecase",
+          model: res.model || currentModelData,
+          plantuml: res.plantuml,
+          review_report: {
+            issues: res.issues || [],
+          },
+          render: res.render,
+        };
+
+        renderResults(updatedData);
+      } else {
+        appendRefactorLog("error", "模型重构未成功，请检查指令后重试。");
+      }
+    } catch (err) {
+      appendRefactorLog("error", `重构遇到异常：${err.message || "服务繁忙，请稍后重试"}`);
+    } finally {
+      if (copilotSendBtn) {
+        copilotSendBtn.disabled = false;
+        copilotSendBtn.innerHTML = `
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>执行重构</span>
+        `;
+      }
+      if (copilotInputText) {
+        copilotInputText.disabled = false;
+        copilotInputText.focus();
+      }
+    }
+  }
+
+  // 表单与快捷微调事件绑定
+  if (copilotInputForm && copilotInputText) {
+    copilotInputForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const val = copilotInputText.value.trim();
+      if (!val) return;
+      copilotInputText.value = "";
+      handleCopilotAdjust(val);
+    });
+
+    copilotInputText.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        const val = copilotInputText.value.trim();
+        if (!val) return;
+        copilotInputText.value = "";
+        handleCopilotAdjust(val);
+      }
+    });
+  }
+
+  if (copilotQuickChips) {
+    copilotQuickChips.addEventListener("click", (e) => {
+      const chip = e.target.closest(".copilot-chip");
+      if (chip) {
+        const prompt = chip.getAttribute("data-prompt") || chip.textContent.trim();
+        handleCopilotAdjust(prompt);
+      }
+    });
+  }
+
+  if (copilotUndoBtn) {
+    copilotUndoBtn.addEventListener("click", () => {
+      if (!previousUmlState) return;
+      const restored = {
+        diagram_type: "usecase",
+        model: previousUmlState.model,
+        plantuml: previousUmlState.plantuml,
+        review_report: {
+          issues: previousUmlState.issues,
+        },
+        render: {
+          status: "rendered",
+          image_url: previousUmlState.imageUrl,
+          download_url: previousUmlState.imageUrl,
+          format: formatSelect ? formatSelect.value : "svg",
+        },
+      };
+      renderResults(restored);
+      appendRefactorLog("undo", "已回滚至重构前的历史架构快照，模型拓扑与要素清单已同步恢复。");
+      previousUmlState = null;
+      copilotUndoBtn.style.display = "none";
+    });
+  }
+
+  if (copilotClearBtn && copilotChatHistory) {
+    copilotClearBtn.addEventListener("click", () => {
+      copilotChatHistory.innerHTML = `
+        <div class="refactor-guide-card">
+          <div class="refactor-guide-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+            增量重构指令说明
+          </div>
+          <div>支持通过自然语言指令对当前模型进行边界演进与拓扑重组，操作将同步刷新画布与规范质检报告：</div>
+          <ul class="refactor-guide-list">
+            <li><strong>用例解耦或移除</strong>：如“去掉用户注册功能”，自动解耦所有通信连线并移出边界</li>
+            <li><strong>增补业务用例</strong>：如“增加第三方在线支付功能，建立 extend 扩展关系”，自动分配唯一 UC-ID</li>
+            <li><strong>参与者聚合与边界重组</strong>：如“将买家与卖家合并为统一的在校学生角色”</li>
+            <li><strong>动宾命名规范化</strong>：依据 ISO/IEC 19505 规范统一用例粒度为规范动宾短语</li>
+          </ul>
+        </div>
+      `;
+    });
+  }
+
   // 辅助别名定义，防止拼写差异
   const modelUseCasesCountText = document.getElementById("model-usecases-count-text");
+
+  // 跨页联动：检测是否从实训任务工单带入了待质检的业务需求或参考模型
+  try {
+    const pendingReq = localStorage.getItem("pending_uml_requirement");
+    if (pendingReq && textarea) {
+      textarea.value = pendingReq;
+      updateCharCount();
+      localStorage.removeItem("pending_uml_requirement");
+      setTimeout(() => {
+        if (generateBtn) generateBtn.click();
+      }, 350);
+    }
+  } catch (e) {
+    console.warn("读取跨页建模任务失败", e);
+  }
 });
