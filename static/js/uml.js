@@ -41,6 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const downloadDrawioBtn = document.getElementById("download-drawio-btn");
   const exportFormatSelect = document.getElementById("export-format-select");
   const downloadSvgBtn = document.getElementById("download-svg-btn");
+  const downloadDrawioPngBtn = document.getElementById("download-drawio-png-btn");
   const btnOpenCopilot = document.getElementById("btn-open-copilot");
 
   // 标签页控制 (AI 对话调优、质检报告、要素清单)
@@ -670,6 +671,38 @@ document.addEventListener("DOMContentLoaded", () => {
           downloadSvgBtn.style.display = "none";
         }
       }
+      if (downloadDrawioPngBtn) {
+        if (svgUrl) {
+          // 惰性转换：点击时 SVG → canvas → PNG（drawio 版式位图，2x 高清）
+          downloadDrawioPngBtn.onclick = async () => {
+            const svgText = await (await fetch(svgUrl)).text();
+            const img = new Image();
+            const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgText);
+            await new Promise((res, rej) => {
+              img.onload = res;
+              img.onerror = rej;
+              img.src = dataUrl;
+            });
+            const canvas = document.createElement("canvas");
+            canvas.width = img.naturalWidth * 2;
+            canvas.height = img.naturalHeight * 2;
+            const ctx = canvas.getContext("2d");
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob((blob) => {
+              const a = document.createElement("a");
+              a.href = URL.createObjectURL(blob);
+              a.download = `usecase_${Date.now()}.png`;
+              a.click();
+              URL.revokeObjectURL(a.href);
+            }, "image/png");
+          };
+          downloadDrawioPngBtn.style.display = "inline-flex";
+        } else {
+          downloadDrawioPngBtn.style.display = "none";
+        }
+      }
       if (downloadSvgBtn) {
         const svgUrl = (window.__lastSvgUrl = data.svg_download_url || null);
         if (svgUrl) {
@@ -678,6 +711,38 @@ document.addEventListener("DOMContentLoaded", () => {
           downloadSvgBtn.style.display = "inline-flex";
         } else {
           downloadSvgBtn.style.display = "none";
+        }
+      }
+      if (downloadDrawioPngBtn) {
+        if (svgUrl) {
+          // 惰性转换：点击时 SVG → canvas → PNG（drawio 版式位图，2x 高清）
+          downloadDrawioPngBtn.onclick = async () => {
+            const svgText = await (await fetch(svgUrl)).text();
+            const img = new Image();
+            const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgText);
+            await new Promise((res, rej) => {
+              img.onload = res;
+              img.onerror = rej;
+              img.src = dataUrl;
+            });
+            const canvas = document.createElement("canvas");
+            canvas.width = img.naturalWidth * 2;
+            canvas.height = img.naturalHeight * 2;
+            const ctx = canvas.getContext("2d");
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob((blob) => {
+              const a = document.createElement("a");
+              a.href = URL.createObjectURL(blob);
+              a.download = `usecase_${Date.now()}.png`;
+              a.click();
+              URL.revokeObjectURL(a.href);
+            }, "image/png");
+          };
+          downloadDrawioPngBtn.style.display = "inline-flex";
+        } else {
+          downloadDrawioPngBtn.style.display = "none";
         }
       }
 
