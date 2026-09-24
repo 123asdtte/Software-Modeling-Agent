@@ -69,6 +69,21 @@ uvicorn app.main:app --reload
 #    教材问答：   POST http://127.0.0.1:8000/v1/qa    {"question": "什么是用例图？"}
 ```
 
+### PlantUML 环境准备（本地部署必读）
+
+PlantUML 经典引擎出图依赖本地 `tools/plantuml.jar`（二进制不进 Git，需手工下载；
+另需 JRE 17+）。**缺失时 API 不会报错，而是降级为「仅生成源码模式」**——注意排查。
+另外，无需 Java 的替代方案：前端「绘图引擎」选 draw.io，走纯 Python SVG 渲染器。
+
+```bash
+mkdir -p tools
+# GitHub 直连慢/被墙时，可用镜像 + 断点续传（-C -）多试几次直到 java -jar 校验通过：
+curl -L -C - -o tools/plantuml.jar \
+  "https://ghfast.top/https://github.com/plantuml/plantuml/releases/download/v1.2025.7/plantuml-1.2025.7.jar"
+# 校验（应输出版本号而非 "Invalid or corrupt jarfile"）：
+java -jar tools/plantuml.jar -version
+```
+
 ## 目录结构
 
 ```
