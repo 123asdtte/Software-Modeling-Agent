@@ -596,17 +596,17 @@ document.addEventListener("DOMContentLoaded", () => {
         kpiQualityLevel.textContent = "优秀·全部达标";
         kpiQualityLevel.style.color = "var(--color-success)";
         kpiScoreIcon.className = "kpi-icon-wrap kpi-icon-emerald";
-        kpiScoreIcon.textContent = "🛡️";
+        kpiScoreIcon.textContent = IconLib.svg("shield-check", 14);
       } else if (score >= 70) {
         kpiQualityLevel.textContent = "良好·轻微瑕疵";
         kpiQualityLevel.style.color = "var(--color-warning)";
         kpiScoreIcon.className = "kpi-icon-wrap kpi-icon-blue";
-        kpiScoreIcon.textContent = "⚠️";
+        kpiScoreIcon.textContent = IconLib.svg("triangle-alert", 14);
       } else {
         kpiQualityLevel.textContent = "需优化·存在错误";
         kpiQualityLevel.style.color = "var(--color-error)";
         kpiScoreIcon.className = "kpi-icon-wrap kpi-icon-purple";
-        kpiScoreIcon.textContent = "❌";
+        kpiScoreIcon.textContent = IconLib.svg("circle-x", 14);
       }
     }
   }
@@ -772,11 +772,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // 状态胶囊更新
     if (reviewBadgeContainer) {
       if (errorCount > 0) {
-        reviewBadgeContainer.innerHTML = `<span class="badge badge-error">❌ ${errorCount} 项严重违规</span>`;
+        reviewBadgeContainer.innerHTML = `<span class="badge badge-error">${IconLib.svg("circle-x", 14)} ${errorCount} 项严重违规</span>`;
       } else if (warnCount > 0) {
-        reviewBadgeContainer.innerHTML = `<span class="badge badge-warning">⚠️ ${warnCount} 项教学预警</span>`;
+        reviewBadgeContainer.innerHTML = `<span class="badge badge-warning">${IconLib.svg("triangle-alert", 14)} ${warnCount} 项教学预警</span>`;
       } else {
-        reviewBadgeContainer.innerHTML = `<span class="badge badge-success">✅ 规范质检通过</span>`;
+        reviewBadgeContainer.innerHTML = `<span class="badge badge-success">${IconLib.svg("check", 14)} 规范质检通过</span>`;
       }
     }
 
@@ -819,7 +819,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (filtered.length === 0) {
       const tr = document.createElement("tr");
       tr.innerHTML = `<td colspan="4" style="text-align: center; color: var(--color-text-secondary); padding: 32px 0;">
-        <div style="font-size: 24px; margin-bottom: 6px;">🔍</div>
+        <div style="font-size: 24px; margin-bottom: 6px;">${IconLib.svg("search", 14)}</div>
         <div>未找到符合筛选条件的质检规则或项</div>
       </td>`;
       issuesTbody.appendChild(tr);
@@ -851,7 +851,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <td><code style="font-family: var(--font-mono); font-size: 12px; background: var(--color-bg); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--color-border);">${escapeHtml(item.target || "-")}</code></td>
         <td>
           <div style="line-height: 1.5;">${escapeHtml(item.message || "-")}</div>
-          ${item.suggestion ? `<div style="font-size: 12px; color: var(--color-primary); margin-top: 4px; background: rgba(59, 130, 246, 0.08); padding: 4px 8px; border-radius: 4px; display: inline-block;">💡 教学提示：${escapeHtml(item.suggestion)}</div>` : ""}
+          ${item.suggestion ? `<div style="font-size: 12px; color: var(--color-primary); margin-top: 4px; background: rgba(59, 130, 246, 0.08); padding: 4px 8px; border-radius: 4px; display: inline-block;">${IconLib.svg("lightbulb", 14)} 教学提示：${escapeHtml(item.suggestion)}</div>` : ""}
         </td>
       `;
       issuesTbody.appendChild(tr);
@@ -902,7 +902,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const roleBadgeText = isPrimary ? "主角色" : "次角色";
 
           chip.innerHTML = `
-            <span class="actor-icon">${isPrimary ? "👤" : "⚙️"}</span>
+            <span class="actor-icon">${isPrimary ? IconLib.svg("user", 14) : IconLib.svg("settings", 14)}</span>
             <span class="actor-name">${escapeHtml(act.name)}</span>
             <span class="actor-role-badge ${roleBadgeClass}">${roleBadgeText}</span>
           `;
@@ -992,14 +992,14 @@ document.addEventListener("DOMContentLoaded", () => {
         plantumlCode.style.display = "block";
         if (reRenderPumlBtn) reRenderPumlBtn.style.display = "none";
         if (resetPumlBtn) resetPumlBtn.style.display = "none";
-        toggleEditorBtn.textContent = "✏️ 开启在线编辑";
+        toggleEditorBtn.textContent = IconLib.svg("pencil", 14) + " 开启在线编辑";
       } else {
         plantumlEditor.value = plantumlCode.textContent || "";
         plantumlEditor.style.display = "block";
         plantumlCode.style.display = "none";
         if (reRenderPumlBtn) reRenderPumlBtn.style.display = "inline-flex";
         if (resetPumlBtn) resetPumlBtn.style.display = "inline-flex";
-        toggleEditorBtn.textContent = "👁️ 退出编辑视图";
+        toggleEditorBtn.textContent = IconLib.svg("eye", 14) + " 退出编辑视图";
         plantumlEditor.focus();
       }
     });
@@ -1043,7 +1043,7 @@ document.addEventListener("DOMContentLoaded", () => {
         showError("重绘失败：" + (err.message || "服务异常"));
       } finally {
         reRenderPumlBtn.disabled = false;
-        reRenderPumlBtn.textContent = "🔄 立即重绘当前代码";
+        reRenderPumlBtn.textContent = IconLib.svg("refresh-cw", 14) + " 立即重绘当前代码";
       }
     });
   }

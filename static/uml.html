@@ -49,7 +49,7 @@
 
       <!-- Example Chips -->
       <div class="chips-container" id="examples-chips">
-        <span class="chips-label">🎯 实训典型案例：</span>
+        <span class="chips-label"><i data-icon="target"></i> 实训典型案例：</span>
         <button type="button" class="chip-item" data-example="学生可以发布闲置二手商品，买家可以按分类浏览商品并在线下单支付，管理员负责审核违规商品并处理订单争议。">校园二手交易 (高职实训)</button>
         <button type="button" class="chip-item" data-example="读者可以查询馆藏图书、借阅图书和归还图书；图书管理员负责办理借还登记并入库新书；系统自动发送超期催还提醒。">图书借阅管理 (标准案例)</button>
         <button type="button" class="chip-item" data-example="患者可以按科室在线预约挂号、在线支付诊疗费用；门诊主治医师负责接诊患者并开具电子处方；药房药剂师核对处方并发药。">医院门诊导诊开方 (多角色联动)</button>
@@ -115,18 +115,18 @@
       <!-- 全案联动提示条 -->
       <div class="uml-synergy-banner" style="background: linear-gradient(135deg, rgba(37,99,235,0.06) 0%, rgba(124,58,237,0.06) 100%); border: 1px solid rgba(37,99,235,0.2); border-radius: var(--radius-md); padding: 12px 18px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
         <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: 16px;">💡</span>
+          <span style="font-size: 16px;"><i data-icon="lightbulb"></i></span>
           <span style="font-size: 13px; color: var(--color-text);">模型质检已就绪，可一键基于该业务架构联产全套「PPT 教学课件 + 高职规范教案 + 实训任务工单」</span>
         </div>
         <button type="button" class="btn btn-primary" id="btn-export-to-teaching-package" style="font-size: 12px; padding: 5px 14px; font-weight: 600;">
-          ⚡ 基于当前模型联产教学全案 →
+          <i data-icon="zap"></i> 基于当前模型联产教学全案 →
         </button>
       </div>
 
       <!-- 架构概览指标卡（KPI Banner） -->
       <div class="uml-kpi-banner" id="uml-kpi-banner">
         <div class="kpi-card" id="kpi-system-card">
-          <div class="kpi-icon-wrap kpi-icon-blue">🏛️</div>
+          <div class="kpi-icon-wrap kpi-icon-blue"><i data-icon="landmark"></i></div>
           <div class="kpi-content">
             <span class="kpi-label">目标系统边界</span>
             <span class="kpi-value" id="kpi-system-name">-</span>
@@ -134,7 +134,7 @@
           </div>
         </div>
         <div class="kpi-card" id="kpi-actors-card" style="cursor: pointer;" title="点击切换至要素清单查看参与者">
-          <div class="kpi-icon-wrap kpi-icon-purple">👤</div>
+          <div class="kpi-icon-wrap kpi-icon-purple"><i data-icon="user"></i></div>
           <div class="kpi-content">
             <span class="kpi-label">识别参与者 (Actors)</span>
             <span class="kpi-value" id="kpi-actors-count">0 位</span>
@@ -142,7 +142,7 @@
           </div>
         </div>
         <div class="kpi-card" id="kpi-usecases-card" style="cursor: pointer;" title="点击切换至要素清单查看用例">
-          <div class="kpi-icon-wrap kpi-icon-green">📦</div>
+          <div class="kpi-icon-wrap kpi-icon-green"><i data-icon="package"></i></div>
           <div class="kpi-content">
             <span class="kpi-label">核心用例 (Use Cases)</span>
             <span class="kpi-value" id="kpi-usecases-count">0 个</span>
@@ -150,7 +150,7 @@
           </div>
         </div>
         <div class="kpi-card" id="kpi-relations-card" style="cursor: pointer;" title="点击查看关系">
-          <div class="kpi-icon-wrap" style="background: var(--color-warning-light); color: var(--color-warning);">🔗</div>
+          <div class="kpi-icon-wrap" style="background: var(--color-warning-light); color: var(--color-warning);"><i data-icon="link"></i></div>
           <div class="kpi-content">
             <span class="kpi-label">规约高级关系</span>
             <span class="kpi-value" id="kpi-relations-count">2 include</span>
@@ -158,7 +158,7 @@
           </div>
         </div>
         <div class="kpi-card" id="kpi-score-card" style="cursor: pointer;" title="点击切换至规范质检报告查看细则">
-          <div class="kpi-icon-wrap kpi-icon-emerald" id="kpi-score-icon">🛡️</div>
+          <div class="kpi-icon-wrap kpi-icon-emerald" id="kpi-score-icon"><i data-icon="shield-check"></i></div>
           <div class="kpi-content">
             <span class="kpi-label">规范达标率</span>
             <span class="kpi-value" id="kpi-quality-score">100%</span>
@@ -418,7 +418,7 @@
           <div id="view-model-elements" style="display: none;" class="model-elements-box">
             <div>
               <div class="elements-section-header">
-                <span>👥 识别的参与者 (Actors)</span>
+                <span><i data-icon="users"></i> 识别的参与者 (Actors)</span>
                 <span style="font-size: 11px; color: var(--color-text-secondary);" id="model-actors-count-text">共 0 位</span>
               </div>
               <div class="actors-chip-group" id="model-actors-container">
@@ -428,7 +428,7 @@
 
             <div>
               <div class="elements-section-header">
-                <span>📦 用例业务清单 (Use Cases)</span>
+                <span><i data-icon="package"></i> 用例业务清单 (Use Cases)</span>
                 <span style="font-size: 11px; color: var(--color-text-secondary);" id="model-usecases-count-text">共 0 个用例</span>
               </div>
               <div style="overflow-x: auto;">
@@ -454,17 +454,17 @@
       <!-- Collapsible PlantUML Source Block & Live Editor -->
       <details class="code-details" id="plantuml-details" style="margin-top: 24px;" open>
         <summary style="display: flex; align-items: center; justify-content: space-between;">
-          <span>💻 PlantUML 源码与实时调优工作区 (model.puml)</span>
+          <span><i data-icon="monitor"></i> PlantUML 源码与实时调优工作区 (model.puml)</span>
           <span style="font-size: 12px; font-weight: normal; color: var(--color-text-secondary);">点击收起/展开</span>
         </summary>
         <div class="code-details-body">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
             <div style="display: flex; align-items: center; gap: 8px;">
               <button id="toggle-editor-btn" class="btn btn-secondary" style="font-size: 12px; padding: 4px 10px; background: var(--brand-700); color: #fff; border-color: var(--brand-600);" type="button">
-                ✏️ 开启在线编辑
+                <i data-icon="pencil"></i> 开启在线编辑
               </button>
               <button id="re-render-puml-btn" class="btn btn-primary" style="font-size: 12px; padding: 4px 12px; display: none;" type="button">
-                🔄 立即重绘当前代码
+                <i data-icon="refresh-cw"></i> 立即重绘当前代码
               </button>
               <button id="reset-puml-btn" class="btn btn-secondary" style="font-size: 12px; padding: 4px 10px; display: none; background: var(--brand-800); color: var(--brand-400); border-color: var(--brand-700);" type="button">
                 ↩️ 还原原始源码
@@ -518,7 +518,7 @@
         <div class="modal-body">
           <div class="confirm-preview-box">
             <div class="confirm-preview-label">
-              <span>📝 需求内容摘要</span>
+              <span><i data-icon="notebook-pen"></i> 需求内容摘要</span>
               <span id="confirm-char-count" class="badge badge-info">0 字</span>
             </div>
             <div id="confirm-requirement-preview" class="confirm-preview-text"></div>
@@ -588,6 +588,7 @@
     </div>
   </main>
 
+  <script src="js/icons.js"></script>
   <script src="js/api.js"></script>
   <script src="js/layout.js"></script>
   <script src="js/uml.js"></script>

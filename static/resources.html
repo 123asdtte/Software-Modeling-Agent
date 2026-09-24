@@ -16,7 +16,7 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
           </svg>
-          ⚡ 教学全案三件套联产
+          <i data-icon="zap"></i> 教学全案三件套联产
         </button>
         <button type="button" class="subnav-tab-btn" id="tab-btn-ppt" data-target="panel-ppt" style="display: inline-flex; align-items: center; gap: 6px;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -75,13 +75,13 @@
         <div class="card-header">
           <div>
             <h1 class="card-title" style="display: flex; align-items: center; gap: 8px;">
-              <span style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; background: linear-gradient(135deg, #18181b, #52525b); color: #fff; border-radius: 6px; font-size: 14px;">⚡</span>
+              <span style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; background: linear-gradient(135deg, #18181b, #52525b); color: #fff; border-radius: 6px; font-size: 14px;"><i data-icon="zap"></i></span>
               教学全案三件套一键联产（生产交付级）
             </h1>
             <p class="card-subtitle">面向高校与职业院校一线教学，只需一次录入课题，即可一键生成深度协同的「PPT 教学课件 + 高职规范教案 + 理实一体化工单 + 标准 PlantUML 答案模型」，支持一键批量导出 Word 与离线课件包！</p>
           </div>
           <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-            <span class="badge badge-success">✓ 100% 格式防损坏</span>
+            <span class="badge badge-success"><i data-icon="check"></i> 100% 格式防损坏</span>
             <span class="badge badge-primary">支持真实 Word 导出</span>
             <span class="badge badge-info">UML 工作台联通</span>
           </div>
@@ -89,7 +89,7 @@
 
         <!-- 常用课题快速填入 Chips -->
         <div class="chips-container" style="margin-top: 0; margin-bottom: 14px;">
-          <span class="chips-label">🎯 快捷全案课题：</span>
+          <span class="chips-label"><i data-icon="target"></i> 快捷全案课题：</span>
           <button type="button" class="chip-item pkg-chip" data-topic="校园二手闲置物品交易系统用例建模" data-minutes="90" data-template="integrated" data-student="junior" data-mode="pair">校园二手交易用例 (90m结对)</button>
           <button type="button" class="chip-item pkg-chip" data-topic="智慧数字化图书馆借还图书系统建模" data-minutes="90" data-template="integrated" data-student="junior" data-mode="pair">图书借还管理系统 (90m)</button>
           <button type="button" class="chip-item pkg-chip" data-topic="医院挂号分诊与门诊开方系统设计" data-minutes="90" data-template="integrated" data-student="senior" data-mode="pair">医院分诊就医系统 (90m进阶)</button>
@@ -102,7 +102,7 @@
             <label for="pkg-topic" class="form-label">课程实训课题名称 <span style="color: var(--color-error); font-weight: bold;">*</span></label>
             <div style="position: relative;">
               <input type="text" id="pkg-topic" class="form-input" placeholder="例如：校园二手闲置物品交易系统用例建模" value="校园二手闲置物品交易系统用例建模" maxlength="100" style="padding-right: 36px;">
-              <button type="button" id="pkg-topic-clear" class="btn-input-clear" title="清空课题" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%);">✕</button>
+              <button type="button" id="pkg-topic-clear" class="btn-input-clear" title="清空课题" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%);"><i data-icon="x"></i></button>
             </div>
           </div>
 
@@ -137,10 +137,10 @@
 
         <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 14px; border-top: 1px dashed var(--color-border); flex-wrap: wrap; gap: 10px;">
           <div style="display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--color-text-secondary);">
-            <span>⚡ 一次生成 4 项核心成果：PPT课件 + 规范教案 + 实训工单 + PlantUML 答案模型</span>
+            <span><i data-icon="zap"></i> 一次生成 4 项核心成果：PPT课件 + 规范教案 + 实训工单 + PlantUML 答案模型</span>
           </div>
           <button type="button" class="btn btn-primary" id="btn-generate-package" style="padding: 10px 24px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">
-            🚀 一键联产教学全案（生成级别）
+            <i data-icon="rocket"></i> 一键联产教学全案（生成级别）
           </button>
         </div>
       </div>
@@ -161,10 +161,10 @@
           </div>
           <div style="display: flex; gap: 8px;">
             <button type="button" class="btn btn-secondary" id="btn-save-package-draft" style="font-size: 12px;">
-              💾 保存全案至草稿箱
+              <i data-icon="save"></i> 保存全案至草稿箱
             </button>
             <button type="button" class="btn btn-primary" id="btn-download-all-package" style="font-size: 12px; padding: 6px 16px;">
-              📦 批量导出教学全案（Word + 离线课件）
+              <i data-icon="package"></i> 批量导出教学全案（Word + 离线课件）
             </button>
           </div>
         </div>
@@ -194,10 +194,10 @@
             </div>
             <div class="package-suite-footer">
               <button type="button" class="btn btn-secondary" id="btn-switch-to-ppt" style="font-size: 12px;">
-                🖥️ 进入放映调试
+                <i data-icon="monitor"></i> 进入放映调试
               </button>
               <a id="pkg-download-ppt-btn" class="btn btn-primary" href="#" style="font-size: 12px; text-decoration: none;">
-                ⬇ 导出离线课件包
+                <i data-icon="arrow-down"></i> 导出离线课件包
               </a>
             </div>
           </div>
@@ -226,10 +226,10 @@
             </div>
             <div class="package-suite-footer">
               <button type="button" class="btn btn-secondary" id="btn-switch-to-lesson" style="font-size: 12px;">
-                📝 查看教案详案
+                <i data-icon="notebook-pen"></i> 查看教案详案
               </button>
               <a id="pkg-download-lesson-btn" class="btn btn-primary" href="#" style="font-size: 12px; text-decoration: none;">
-                ⬇ 下载 .docx 教案
+                <i data-icon="arrow-down"></i> 下载 .docx 教案
               </a>
             </div>
           </div>
@@ -256,10 +256,10 @@
             </div>
             <div class="package-suite-footer">
               <button type="button" class="btn btn-secondary" id="btn-switch-to-tasksheet" style="font-size: 12px;">
-                📋 查看工单细则
+                <i data-icon="clipboard-list"></i> 查看工单细则
               </button>
               <a id="pkg-download-tasksheet-btn" class="btn btn-primary" href="#" style="font-size: 12px; text-decoration: none;">
-                ⬇ 下载 .docx 工单
+                <i data-icon="arrow-down"></i> 下载 .docx 工单
               </a>
             </div>
           </div>
@@ -270,7 +270,7 @@
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
             <div>
               <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--color-text); display: flex; align-items: center; gap: 6px;">
-                <span>📐</span> 教师备课标准参考模型与 PlantUML 源码（跨页面联通）
+                <span><i data-icon="ruler"></i></span> 教师备课标准参考模型与 PlantUML 源码（跨页面联通）
               </h3>
               <p style="margin: 4px 0 0 0; font-size: 12px; color: var(--color-text-secondary);">
                 标准参考架构方案已就绪，可一键发送至「UML 建模工作台」进行实时渲染与 AI 智能体规范质检
@@ -278,10 +278,10 @@
             </div>
             <div style="display: flex; gap: 8px;">
               <button type="button" class="btn btn-secondary" id="pkg-btn-copy-plantuml" style="font-size: 12px;">
-                📋 复制 PlantUML 源码
+                <i data-icon="clipboard-list"></i> 复制 PlantUML 源码
               </button>
               <button type="button" class="btn btn-primary" id="pkg-btn-launch-uml-workbench" style="font-size: 12px; font-weight: 600;">
-                🚀 载入 UML 建模工作台在线质检
+                <i data-icon="rocket"></i> 载入 UML 建模工作台在线质检
               </button>
             </div>
           </div>
@@ -314,7 +314,7 @@
 
         <!-- 常用课题快速填入 Chips -->
         <div class="chips-container" style="margin-top: 0; margin-bottom: 14px;">
-          <span class="chips-label">🎯 快捷课题：</span>
+          <span class="chips-label"><i data-icon="target"></i> 快捷课题：</span>
           <button type="button" class="chip-item ppt-chip" data-topic="软件工程 UML 用例图建模" data-minutes="90" data-template="integrated">软件工程 UML 用例图 (90m)</button>
           <button type="button" class="chip-item ppt-chip" data-topic="银行 ATM 状态机图设计与死锁防范" data-minutes="45" data-template="integrated">银行 ATM 状态机图 (45m)</button>
           <button type="button" class="chip-item ppt-chip" data-topic="医院门诊跨部门泳道活动图实践" data-minutes="60" data-template="integrated">医院门诊泳道活动图 (60m)</button>
@@ -334,7 +334,7 @@
                 value="软件工程 UML 建模"
                 maxlength="100"
               />
-              <button type="button" id="ppt-topic-clear" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--color-text-muted); cursor: pointer; display: none; font-size: 14px;" title="清空课题">✕</button>
+              <button type="button" id="ppt-topic-clear" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--color-text-muted); cursor: pointer; display: none; font-size: 14px;" title="清空课题"><i data-icon="x"></i></button>
             </div>
             <div class="form-error-msg" id="ppt-topic-error" style="display: none;">请输入有效的主题（2~100 字）</div>
           </div>
@@ -436,14 +436,14 @@
 
         <!-- Outline Card -->
         <div class="card">
-          <h3 class="card-title" style="margin-bottom: 14px;">📑 课程大纲章节递进结构</h3>
+          <h3 class="card-title" style="margin-bottom: 14px;"><i data-icon="layers"></i> 课程大纲章节递进结构</h3>
           <div id="ppt-outline-container" class="outline-list"></div>
         </div>
 
         <!-- Pages Grid Card -->
         <div class="card">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
-            <h3 class="card-title" style="margin-bottom: 0;">🖼️ 幻灯片逐页预览与讲授备课指导</h3>
+            <h3 class="card-title" style="margin-bottom: 0;"><i data-icon="image"></i> 幻灯片逐页预览与讲授备课指导</h3>
             <span style="font-size: 12px; color: var(--color-text-secondary);">点击单卡右下角可直接全屏放映该页</span>
           </div>
           <div id="ppt-pages-grid" class="ppt-pages-grid"></div>
@@ -476,7 +476,7 @@
 
         <!-- 常用课题快捷 Chips -->
         <div class="chips-container" style="margin-top: 0; margin-bottom: 14px;">
-          <span class="chips-label">🎯 快捷课题：</span>
+          <span class="chips-label"><i data-icon="target"></i> 快捷课题：</span>
           <button type="button" class="chip-item lesson-chip" data-topic="用例图三要素与动宾短语设计" data-minutes="45" data-student="junior" data-venue="lab">用例图三要素与动宾规范 (45m)</button>
           <button type="button" class="chip-item lesson-chip" data-topic="包含与扩展关系（include/extend）深度辨析" data-minutes="45" data-student="junior" data-venue="lab">Include vs Extend 辨析 (45m)</button>
           <button type="button" class="chip-item lesson-chip" data-topic="银行 ATM 状态机图建模与监护条件设计" data-minutes="90" data-student="senior" data-venue="lab">ATM 状态机图教学设计 (90m)</button>
@@ -495,7 +495,7 @@
                 value="用例图教学设计"
                 maxlength="100"
               />
-              <button type="button" id="lesson-topic-clear" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--color-text-muted); cursor: pointer; display: none; font-size: 14px;" title="清空课题">✕</button>
+              <button type="button" id="lesson-topic-clear" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--color-text-muted); cursor: pointer; display: none; font-size: 14px;" title="清空课题"><i data-icon="x"></i></button>
             </div>
             <div class="form-error-msg" id="lesson-topic-error" style="display: none;">请输入有效课题（2~100 字）</div>
           </div>
@@ -608,7 +608,7 @@
             <span>⏱️ 教学四环节时间分配平衡器</span>
             <div style="display: flex; align-items: center; gap: 8px;">
               <span id="time-balance-status-text" style="font-size: 12px; color: var(--color-success); font-weight: normal;">已平衡：共 45 分钟</span>
-              <button type="button" id="time-auto-balance-btn" class="btn btn-secondary" style="padding: 2px 8px; font-size: 11px;">⚖️ 自动平衡时序</button>
+              <button type="button" id="time-auto-balance-btn" class="btn btn-secondary" style="padding: 2px 8px; font-size: 11px;"><i data-icon="scale"></i> 自动平衡时序</button>
             </div>
           </div>
           <div class="time-progress-track">
@@ -629,20 +629,20 @@
         <div class="card">
           <!-- 1. 教学目标 (三列卡片) -->
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
-            <h3 class="card-title" style="margin-bottom: 0;">🎯 三维教学目标</h3>
+            <h3 class="card-title" style="margin-bottom: 0;"><i data-icon="target"></i> 三维教学目标</h3>
             <span style="font-size: 12px; color: var(--color-text-secondary);">支持双击文字行内编辑微调</span>
           </div>
           <div class="goals-grid" id="lesson-goals-container">
             <div class="goal-card">
-              <div class="goal-card-title">📖 知识目标</div>
+              <div class="goal-card-title"><i data-icon="book-open"></i> 知识目标</div>
               <ul class="bullet-list editable-list" id="goal-knowledge-list" style="margin-bottom: 0;"></ul>
             </div>
             <div class="goal-card">
-              <div class="goal-card-title">🛠️ 能力目标</div>
+              <div class="goal-card-title"><i data-icon="wrench"></i> 能力目标</div>
               <ul class="bullet-list editable-list" id="goal-ability-list" style="margin-bottom: 0;"></ul>
             </div>
             <div class="goal-card">
-              <div class="goal-card-title">🌟 素质目标</div>
+              <div class="goal-card-title"><i data-icon="star"></i> 素质目标</div>
               <ul class="bullet-list editable-list" id="goal-literacy-list" style="margin-bottom: 0;"></ul>
             </div>
           </div>
@@ -650,11 +650,11 @@
           <!-- 2. 重点与难点 -->
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
             <div class="goal-card">
-              <div class="goal-card-title">💡 教学重点</div>
+              <div class="goal-card-title"><i data-icon="lightbulb"></i> 教学重点</div>
               <ul class="bullet-list editable-list" id="key-points-list" style="margin-bottom: 0;"></ul>
             </div>
             <div class="goal-card">
-              <div class="goal-card-title">🔍 教学难点</div>
+              <div class="goal-card-title"><i data-icon="search"></i> 教学难点</div>
               <ul class="bullet-list editable-list" id="difficult-points-list" style="margin-bottom: 0;"></ul>
             </div>
           </div>
@@ -678,18 +678,18 @@
           <!-- 4. 课堂练习与课后作业 -->
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px;">
             <div class="goal-card">
-              <div class="goal-card-title">✍️ 随堂实训练习</div>
+              <div class="goal-card-title"><i data-icon="pen-line"></i> 随堂实训练习</div>
               <ol class="bullet-list editable-list" id="exercises-list" style="padding-left: 20px; margin-bottom: 0;"></ol>
             </div>
             <div class="goal-card">
-              <div class="goal-card-title">📝 课后拓展任务</div>
+              <div class="goal-card-title"><i data-icon="notebook-pen"></i> 课后拓展任务</div>
               <ol class="bullet-list editable-list" id="homework-list" style="padding-left: 20px; margin-bottom: 0;"></ol>
             </div>
           </div>
 
           <!-- 5. 教学反思与改进 -->
           <div class="goal-card" style="margin-top: 16px;">
-            <div class="goal-card-title">💡 教学反思与改进建议</div>
+            <div class="goal-card-title"><i data-icon="lightbulb"></i> 教学反思与改进建议</div>
             <p id="lesson-reflection-text" style="font-size: 13px; color: var(--color-text); line-height: 1.6; margin: 0;">-</p>
           </div>
         </div>
@@ -697,7 +697,7 @@
         <!-- Markdown Source Preview Collapsible -->
         <details class="code-details" id="lesson-markdown-details" style="margin-top: 24px;">
           <summary style="display: flex; align-items: center; justify-content: space-between;">
-            <span>📄 教案 Markdown 全文源文本</span>
+            <span><i data-icon="file-text"></i> 教案 Markdown 全文源文本</span>
             <span style="font-size: 12px; font-weight: normal; color: var(--color-text-secondary);">点击展开/折叠</span>
           </summary>
           <div class="code-details-body">
@@ -730,7 +730,7 @@
 
         <!-- 快捷工单 Chips -->
         <div class="chips-container" style="margin-top: 0; margin-bottom: 14px;">
-          <span class="chips-label">🎯 快捷工单：</span>
+          <span class="chips-label"><i data-icon="target"></i> 快捷工单：</span>
           <button type="button" class="chip-item tasksheet-chip" data-topic="校园二手闲置交易系统用例建模" data-minutes="45" data-diff="standard" data-mode="pair">校园二手交易用例工单 (45m·结对)</button>
           <button type="button" class="chip-item tasksheet-chip" data-topic="高校图书馆数字化借阅系统权限与状态图" data-minutes="60" data-diff="standard" data-mode="pair">图书借阅状态图工单 (60m·结对)</button>
           <button type="button" class="chip-item tasksheet-chip" data-topic="医院在线就诊挂号与结算泳道活动图" data-minutes="45" data-diff="entry" data-mode="solo">就诊挂号活动图工单 (45m·独立)</button>
@@ -749,7 +749,7 @@
                 value="校园二手闲置交易系统用例建模"
                 maxlength="100"
               />
-              <button type="button" id="tasksheet-topic-clear" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--color-text-muted); cursor: pointer; display: none; font-size: 14px;" title="清空课题">✕</button>
+              <button type="button" id="tasksheet-topic-clear" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--color-text-muted); cursor: pointer; display: none; font-size: 14px;" title="清空课题"><i data-icon="x"></i></button>
             </div>
             <div class="form-error-msg" id="tasksheet-topic-error" style="display: none;">请输入有效实训课题（2~100 字）</div>
           </div>
@@ -869,16 +869,16 @@
 
         <!-- 任务情境与交付物卡片 -->
         <div class="card">
-          <h3 class="card-title" style="margin-bottom: 10px;">🏢 一、实训任务情境背景</h3>
+          <h3 class="card-title" style="margin-bottom: 10px;"><i data-icon="building-2"></i> 一、实训任务情境背景</h3>
           <p id="tasksheet-scenario-content" style="font-size: 13px; color: var(--color-text); line-height: 1.7; margin-bottom: 20px;">-</p>
 
-          <h3 class="card-title" style="margin-bottom: 10px;">📦 二、任务成果验收交付物</h3>
+          <h3 class="card-title" style="margin-bottom: 10px;"><i data-icon="package"></i> 二、任务成果验收交付物</h3>
           <div id="tasksheet-deliverables-container" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px;"></div>
 
-          <h3 class="card-title" style="margin-bottom: 10px;">🛠️ 三、阶梯式实操工序与关键检验点</h3>
+          <h3 class="card-title" style="margin-bottom: 10px;"><i data-icon="wrench"></i> 三、阶梯式实操工序与关键检验点</h3>
           <div id="tasksheet-steps-container" class="task-steps-timeline"></div>
 
-          <h3 class="card-title" style="margin-bottom: 10px;">📊 四、五维过程性考核评价量规（100分制）</h3>
+          <h3 class="card-title" style="margin-bottom: 10px;"><i data-icon="chart-column"></i> 四、五维过程性考核评价量规（100分制）</h3>
           <div style="overflow-x: auto; margin-bottom: 24px;">
             <table class="rubric-table" id="rubric-table">
               <thead>
@@ -892,10 +892,10 @@
             </table>
           </div>
 
-          <h3 class="card-title" style="margin-bottom: 10px;">⚠️ 五、常见翻车陷阱与排错锦囊</h3>
+          <h3 class="card-title" style="margin-bottom: 10px;"><i data-icon="triangle-alert"></i> 五、常见翻车陷阱与排错锦囊</h3>
           <div class="pitfalls-grid" id="tasksheet-pitfalls-container" style="margin-bottom: 24px;"></div>
 
-          <h3 class="card-title" style="margin-bottom: 10px;">📐 六、教师备课标准参考模型与 PlantUML 源码</h3>
+          <h3 class="card-title" style="margin-bottom: 10px;"><i data-icon="ruler"></i> 六、教师备课标准参考模型与 PlantUML 源码</h3>
           <div class="reference-model-card" style="margin-bottom: 16px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
               <div style="font-size: 13px; font-weight: 600; color: var(--color-text);">
@@ -903,10 +903,10 @@
               </div>
               <div style="display: flex; gap: 8px;">
                 <button type="button" class="btn btn-secondary" id="tasksheet-copy-plantuml-btn" style="font-size: 12px; padding: 4px 10px;">
-                  📋 复制 PlantUML 源码
+                  <i data-icon="clipboard-list"></i> 复制 PlantUML 源码
                 </button>
                 <button type="button" class="btn btn-primary" id="tasksheet-launch-uml-btn" style="font-size: 12px; padding: 4px 12px;">
-                  🚀 载入 UML 建模工作台在线质检
+                  <i data-icon="rocket"></i> 载入 UML 建模工作台在线质检
                 </button>
               </div>
             </div>
@@ -917,7 +917,7 @@
         <!-- Markdown 全文折叠 -->
         <details class="code-details" id="tasksheet-markdown-details" style="margin-top: 24px;">
           <summary style="display: flex; align-items: center; justify-content: space-between;">
-            <span>📄 实训任务工单 Markdown 全文源文本</span>
+            <span><i data-icon="file-text"></i> 实训任务工单 Markdown 全文源文本</span>
             <span style="font-size: 12px; font-weight: normal; color: var(--color-text-secondary);">点击展开/折叠</span>
           </summary>
           <div class="code-details-body">
@@ -938,8 +938,8 @@
       </div>
       <div style="display: flex; align-items: center; gap: 12px;">
         <span id="pres-timer" style="font-family: var(--font-mono); font-size: 13px; color: #e4e4e7; background: rgba(255,255,255,0.08); padding: 2px 8px; border-radius: 4px;">00:00</span>
-        <button type="button" id="pres-toggle-notes-btn" class="btn-slide-nav" style="padding: 4px 10px; font-size: 12px;">💡 备课批注</button>
-        <button type="button" id="pres-exit-btn" class="btn-slide-nav" style="padding: 4px 10px; font-size: 12px;">✕ 退出放映 (Esc)</button>
+        <button type="button" id="pres-toggle-notes-btn" class="btn-slide-nav" style="padding: 4px 10px; font-size: 12px;"><i data-icon="lightbulb"></i> 备课批注</button>
+        <button type="button" id="pres-exit-btn" class="btn-slide-nav" style="padding: 4px 10px; font-size: 12px;"><i data-icon="x"></i> 退出放映 (Esc)</button>
       </div>
     </div>
 
@@ -954,7 +954,7 @@
         </div>
 
         <div class="slide-speaker-note-box" id="pres-notes-box">
-          <span style="font-weight: 700; flex-shrink: 0;">💡 讲师引导备忘：</span>
+          <span style="font-weight: 700; flex-shrink: 0;"><i data-icon="lightbulb"></i> 讲师引导备忘：</span>
           <span id="pres-slide-note-text">重点引导学生进行思考互动。</span>
         </div>
       </div>
@@ -993,7 +993,7 @@
         </svg>
         <span>本地教学资源草稿箱</span>
       </div>
-      <button type="button" class="modal-close-btn" id="history-close-btn" title="关闭">✕</button>
+      <button type="button" class="modal-close-btn" id="history-close-btn" title="关闭"><i data-icon="x"></i></button>
     </div>
 
     <div class="drawer-body" id="history-list-container">
@@ -1008,6 +1008,7 @@
     </div>
   </div>
 
+  <script src="js/icons.js"></script>
   <script src="js/api.js"></script>
   <script src="js/layout.js"></script>
   <script src="js/resources.js"></script>

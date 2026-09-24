@@ -279,13 +279,13 @@ document.addEventListener("DOMContentLoaded", () => {
         currentLessonData = data.lesson;
         currentTasksheetData = data.tasksheet;
         renderPackageResults(data);
-        showToast("🎉 教学全案三件套联产成功！全套教学文件已生成完毕。");
+        showToast(`${IconLib.svg("party-popper", 14)} 教学全案三件套联产成功！全套教学文件已生成完毕。`);
       } catch (err) {
         showError(err.message || "全案联产服务响应超时或异常，请稍后重试");
       } finally {
         skeletonBox.style.display = "none";
         btnGeneratePackage.disabled = false;
-        btnGeneratePackage.textContent = "🚀 一键联产教学全案（生成级别）";
+        btnGeneratePackage.textContent = `${IconLib.svg("rocket", 14)} 一键联产教学全案（生成级别）`;
       }
     });
   }
@@ -568,7 +568,7 @@ document.addEventListener("DOMContentLoaded", () => {
             pg.note
               ? `
             <details class="page-note-details">
-              <summary>💡 讲授指导要点</summary>
+              <summary>${IconLib.svg("lightbulb", 14)} 讲授指导要点</summary>
               <p style="margin-top: 4px;">${escapeHtml(pg.note)}</p>
             </details>
           `
@@ -1143,7 +1143,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <strong>操作指引：</strong>${escapeHtml(s.guide)}
         </div>
         <div class="task-step-checkpoint">
-          <span style="font-weight: 700; color: var(--color-primary);">✓ 关键检验点：</span>
+          <span style="font-weight: 700; color: var(--color-primary);">${IconLib.svg("check", 14)} 关键检验点：</span>
           <span>${escapeHtml(s.checkpoint)}</span>
         </div>
       `;
@@ -1169,11 +1169,11 @@ document.addEventListener("DOMContentLoaded", () => {
       pit.className = "pitfall-card";
       pit.innerHTML = `
         <div class="pitfall-title">
-          <span>❌</span>
+          <span>${IconLib.svg("circle-x", 14)}</span>
           <span>${escapeHtml(p.trap)}</span>
         </div>
         <div class="pitfall-solution">
-          <strong>💡 避坑纠错：</strong>${escapeHtml(p.solution)}
+          <strong>${IconLib.svg("lightbulb", 14)} 避坑纠错：</strong>${escapeHtml(p.solution)}
         </div>
       `;
       tasksheetPitfallsContainer.appendChild(pit);
@@ -1299,7 +1299,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const typeBadges = {
-      package: '<span class="badge badge-primary" style="background: linear-gradient(135deg,#18181b,#52525b); color:#fff;">⚡ 教学全案</span>',
+      package: `<span class="badge badge-primary" style="background: linear-gradient(135deg,#18181b,#52525b); color:#fff;">${IconLib.svg("zap", 14)} 教学全案</span>`,
       ppt: '<span class="badge badge-warning">PPT 课件</span>',
       lesson: '<span class="badge badge-success">高职教案</span>',
       tasksheet: '<span class="badge badge-primary">实训工单</span>',
@@ -1312,7 +1312,7 @@ document.addEventListener("DOMContentLoaded", () => {
       card.innerHTML = `
         <div class="history-item-top">
           ${typeBadges[d.type] || '<span class="badge badge-info">教学资源</span>'}
-          <button type="button" class="btn-delete-draft" data-id="${d.id}" style="background: none; border: none; color: var(--color-text-muted); cursor: pointer; font-size: 12px;" title="删除草稿">✕</button>
+          <button type="button" class="btn-delete-draft" data-id="${d.id}" style="background: none; border: none; color: var(--color-text-muted); cursor: pointer; font-size: 12px;" title="删除草稿">${IconLib.svg("x", 14)}</button>
         </div>
         <div class="history-item-title">${escapeHtml(d.title)}</div>
         <div class="history-item-meta">保存时间：${escapeHtml(d.createdAt)}</div>
@@ -1421,7 +1421,7 @@ document.addEventListener("DOMContentLoaded", () => {
         md += `- ${b}\n`;
       });
       if (pg.note) {
-        md += `> 💡 讲授指导要点：${pg.note}\n`;
+        md += `> ${IconLib.svg("lightbulb", 14)} 讲授指导要点：${pg.note}\n`;
       }
       md += "\n";
     });
@@ -1494,7 +1494,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ul.appendChild(li);
       });
       const noteBox = document.getElementById("slide-note");
-      if(p.note) { noteBox.style.display = "block"; noteBox.textContent = "💡 备课要点：" + p.note; }
+      if(p.note) { noteBox.style.display = "block"; noteBox.innerHTML = IconLib.svg("lightbulb", 14) + " 备课要点："; }
       else { noteBox.style.display = "none"; }
     }
     document.getElementById("prev").onclick = () => { if(cur > 0) { cur--; render(); } };
