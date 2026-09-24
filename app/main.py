@@ -52,13 +52,17 @@ app.include_router(package_router)
 # M5：前端静态页面（static/ 目录，见 docs/03-技术方案/05_前端页面设计文档.md）
 _STATIC_DIR = resolve_project_path("static")
 app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
+# 子页面（uml/qa/resources.html）以相对路径引用 css/ js/，从根路由访问时
+# 解析为 /css/... /js/...，补挂这两个目录避免 404（/static/... 别名不受影响）。
+app.mount("/css", StaticFiles(directory=str(_STATIC_DIR / "css")), name="static-css")
+app.mount("/js", StaticFiles(directory=str(_STATIC_DIR / "js")), name="static-js")
 
 
 @app.middleware("http")
 async def no_cache_frontend(request: Request, call_next):
     """前端资源禁用启发式缓存：no-cache 保留 ETag 304 协商，保证发版即生效。"""
     response = await call_next(request)
-    if request.url.path.startswith("/static") or request.url.path == "/":
+    if request.url.path.startswith("/static") or request.url.path.endswith(".html"):
         response.headers["Cache-Control"] = "no-cache"
     return response
 
@@ -67,6 +71,19 @@ async def no_cache_frontend(request: Request, call_next):
 async def index() -> FileResponse:
     """前端入口页（Demo 首页）。"""
     return FileResponse(_STATIC_DIR / "index.html")
+
+
+# 前端四页直达路由：页面内相对链接（href="uml.html"）与 JS 跳转
+# （location.href="/uml.html"）从 / 出发时不再 404。
+def _register_frontend_page(page_name: str) -> None:
+    @app.get(f"/{page_name}", include_in_schema=False)
+    async def _frontend_page() -> FileResponse:
+        """前端静态页直达。"""
+        return FileResponse(_STATIC_DIR / page_name)
+
+
+for _page_name in ("index.html", "uml.html", "qa.html", "resources.html"):
+    _register_frontend_page(_page_name)
 
 
 class ChatRequest(BaseModel):

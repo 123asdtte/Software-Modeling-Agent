@@ -459,17 +459,29 @@ button, input, select, textarea {
 /* ==========================================================================
    5. 首页定制样式（Demo 首页）
    ========================================================================== */
+/* 全宽 hero 横带（对齐参考稿：通栏边框分隔，内容限宽，右侧衬线大数字统计组） */
 .hero-banner {
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-card);
-  padding: var(--spacing-8) var(--spacing-6);
-  margin-bottom: var(--spacing-8);
   position: relative;
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  padding: var(--spacing-8) var(--spacing-4);
+  margin-bottom: var(--spacing-8);
   overflow: hidden;
-  box-shadow: var(--shadow-card);
-  background-image: radial-gradient(var(--color-border) 1px, transparent 1px);
-  background-size: 20px 20px;
+}
+
+.hero-banner-inner {
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-8);
+  flex-wrap: wrap;
+}
+
+.hero-main {
+  min-width: 0;
+  max-width: 620px;
 }
 
 .hero-tag {
@@ -487,11 +499,12 @@ button, input, select, textarea {
 }
 
 .hero-title {
-  font-size: 26px;
-  font-weight: 800;
+  font-size: 32px;
+  font-weight: 700;
   color: var(--color-text);
   margin-bottom: 8px;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.012em;
+  line-height: 1.15;
 }
 
 .hero-subtitle {
@@ -501,11 +514,66 @@ button, input, select, textarea {
   max-width: 600px;
 }
 
-/* 2x2 能力卡片网格 */
+/* 2x2/四列 自适应能力卡网格（≥1100px 四列，其余 2x2） */
 .cards-grid-2x2 {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-4);
+}
+
+@media (min-width: 1100px) {
+  .cards-grid-2x2 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* 区头（标题 + 说明同行基线对齐，参考稿式） */
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-bottom: var(--spacing-4);
+}
+
+.section-head-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.section-head-note {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+/* 统计组（衬线大数字仅用于纯数字，中文单位回退 sans） */
+.hero-stats {
+  display: flex;
+  flex-direction: column;
   gap: var(--spacing-6);
+  align-items: flex-end;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.hero-stat-value {
+  font-size: 36px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+}
+
+.hero-stat-value .serif-num {
+  font-family: var(--font-serif);
+}
+
+.hero-stat-label {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
 }
 
 .ability-card {

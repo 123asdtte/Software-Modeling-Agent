@@ -8,40 +8,63 @@
   <link rel="stylesheet" href="/static/css/main.css">
 </head>
 <body>
-  <main class="main-content" id="main-container">
-    <!-- Hero Banner with Technical Blueprint Styling -->
-    <section class="hero-banner" id="hero-section">
-      <div class="hero-tag">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"></circle>
-          <path d="m9 12 2 2 4-4"></path>
-        </svg>
-        高职软件工程建模课程专用 · 教学规范与大纲对齐
-      </div>
-      <h1 class="hero-title" id="hero-title">面向软件建模课程的 AI 教学智能体平台</h1>
-      <p class="hero-subtitle" id="hero-subtitle">
-        集教材智能问答（RAG）、UML 用例图实时生成与规则质检、PPT 课件与高职规范教案一键导出于一体的工程化教学助手。
-      </p>
-      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-        <a href="uml.html" class="btn btn-primary" id="hero-cta-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-            <polyline points="2 17 12 22 22 17"></polyline>
-            <polyline points="2 12 12 17 22 12"></polyline>
-          </svg>
-          立即体验 UML 建模与质检
-        </a>
-        <a href="qa.html" class="btn btn-secondary">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-          </svg>
-          查阅教材知识库
-        </a>
+  <!-- 全宽 Hero 横带：左侧标题+CTA，右侧衬线大数字统计组 -->
+  <section class="hero-banner" id="hero-section">
+      <div class="hero-banner-inner">
+        <div class="hero-main">
+          <div class="hero-tag">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="m9 12 2 2 4-4"></path>
+            </svg>
+            高职软件工程建模课程专用 · 教学规范与大纲对齐
+          </div>
+          <h1 class="hero-title" id="hero-title">AI 教学智能体平台</h1>
+          <p class="hero-subtitle" id="hero-subtitle">
+            为高职软件建模课程教师打造的备课助手——教材问答、UML 建模、课件与教案一站生成，全部运行在本机。
+          </p>
+          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <a href="uml.html" class="btn btn-primary" id="hero-cta-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                <polyline points="2 17 12 22 22 17"></polyline>
+                <polyline points="2 12 12 17 22 12"></polyline>
+              </svg>
+              进入 UML 建模
+            </a>
+            <a href="qa.html" class="btn btn-secondary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              教材智能问答
+            </a>
+          </div>
+        </div>
+        <div class="hero-stats" aria-label="平台能力统计">
+          <div>
+            <div class="hero-stat-value"><span class="serif-num">4</span> 项</div>
+            <div class="hero-stat-label">核心能力 · 一站直达</div>
+          </div>
+          <div>
+            <div class="hero-stat-value"><span class="serif-num">3</span> 步</div>
+            <div class="hero-stat-label">三步完成一次备课</div>
+          </div>
+          <div>
+            <div class="hero-stat-value" style="font-family: var(--font-serif);">100%</div>
+            <div class="hero-stat-label">本机运行 · 数据不出校门</div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- 4 Capability Cards (2x2 Grid) -->
-    <section class="cards-grid-2x2" id="capabilities-grid">
+  <main class="main-content" id="main-container">
+    <!-- 4 Capability Cards (四列自适应) -->
+    <section id="capabilities-grid">
+      <div class="section-head">
+        <h2 class="section-head-title">四项核心能力</h2>
+        <p class="section-head-note">点击卡片进入对应功能页</p>
+      </div>
+      <div class="cards-grid-2x2">
       <!-- Card 1: UML Modeling -->
       <a href="uml.html" class="ability-card" id="card-uml">
         <div>
@@ -139,14 +162,16 @@
           <span>→</span>
         </div>
       </a>
+      </div>
     </section>
 
     <!-- Bottom Notice Banner -->
     <div style="margin-top: 32px; text-align: center; color: var(--color-text-muted); font-size: 12px;">
-      💡 提示：所有 AI 生成成果仅供授课教师与学生实训参考，使用前请结合实际学情与大纲进行教学审核。
+      <i data-icon="lightbulb"></i> 提示：所有 AI 生成成果仅供授课教师与学生实训参考，使用前请结合实际学情与大纲进行教学审核。
     </div>
   </main>
 
+  <script src="/static/js/icons.js"></script>
   <script src="/static/js/api.js"></script>
   <script src="/static/js/layout.js"></script>
 </body>
