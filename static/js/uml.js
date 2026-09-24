@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const charCounter = document.getElementById("char-counter");
   const errorMsg = document.getElementById("input-error-msg");
   const formatSelect = document.getElementById("format-select");
+  const engineSelect = document.getElementById("engine-select");
   const generateBtn = document.getElementById("generate-uml-btn");
   const errorBar = document.getElementById("uml-error-bar");
   const skeletonBox = document.getElementById("uml-skeleton-box");
@@ -596,17 +597,17 @@ document.addEventListener("DOMContentLoaded", () => {
         kpiQualityLevel.textContent = "优秀·全部达标";
         kpiQualityLevel.style.color = "var(--color-success)";
         kpiScoreIcon.className = "kpi-icon-wrap kpi-icon-emerald";
-        kpiScoreIcon.textContent = IconLib.svg("shield-check", 14);
+        kpiScoreIcon.innerHTML = IconLib.svg("shield-check", 14);
       } else if (score >= 70) {
         kpiQualityLevel.textContent = "良好·轻微瑕疵";
         kpiQualityLevel.style.color = "var(--color-warning)";
         kpiScoreIcon.className = "kpi-icon-wrap kpi-icon-blue";
-        kpiScoreIcon.textContent = IconLib.svg("triangle-alert", 14);
+        kpiScoreIcon.innerHTML = IconLib.svg("triangle-alert", 14);
       } else {
         kpiQualityLevel.textContent = "需优化·存在错误";
         kpiQualityLevel.style.color = "var(--color-error)";
         kpiScoreIcon.className = "kpi-icon-wrap kpi-icon-purple";
-        kpiScoreIcon.textContent = IconLib.svg("circle-x", 14);
+        kpiScoreIcon.innerHTML = IconLib.svg("circle-x", 14);
       }
     }
   }
@@ -662,50 +663,8 @@ document.addEventListener("DOMContentLoaded", () => {
           downloadPumlBtn.style.display = "none";
         }
       }
+      const svgUrl = (window.__lastSvgUrl = data.svg_download_url || null);
       if (downloadSvgBtn) {
-        const svgUrl = (window.__lastSvgUrl = data.svg_download_url || null);
-        if (svgUrl) {
-          downloadSvgBtn.href = svgUrl;
-          downloadSvgBtn.download = `usecase_${Date.now()}.svg`;
-          downloadSvgBtn.style.display = "inline-flex";
-        } else {
-          downloadSvgBtn.style.display = "none";
-        }
-      }
-      if (downloadDrawioPngBtn) {
-        if (svgUrl) {
-          // 惰性转换：点击时 SVG → canvas → PNG（drawio 版式位图，2x 高清）
-          downloadDrawioPngBtn.onclick = async () => {
-            const svgText = await (await fetch(svgUrl)).text();
-            const img = new Image();
-            const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgText);
-            await new Promise((res, rej) => {
-              img.onload = res;
-              img.onerror = rej;
-              img.src = dataUrl;
-            });
-            const canvas = document.createElement("canvas");
-            canvas.width = img.naturalWidth * 2;
-            canvas.height = img.naturalHeight * 2;
-            const ctx = canvas.getContext("2d");
-            ctx.fillStyle = "#ffffff";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            canvas.toBlob((blob) => {
-              const a = document.createElement("a");
-              a.href = URL.createObjectURL(blob);
-              a.download = `usecase_${Date.now()}.png`;
-              a.click();
-              URL.revokeObjectURL(a.href);
-            }, "image/png");
-          };
-          downloadDrawioPngBtn.style.display = "inline-flex";
-        } else {
-          downloadDrawioPngBtn.style.display = "none";
-        }
-      }
-      if (downloadSvgBtn) {
-        const svgUrl = (window.__lastSvgUrl = data.svg_download_url || null);
         if (svgUrl) {
           downloadSvgBtn.href = svgUrl;
           downloadSvgBtn.download = `usecase_${Date.now()}.svg`;
@@ -992,14 +951,14 @@ document.addEventListener("DOMContentLoaded", () => {
         plantumlCode.style.display = "block";
         if (reRenderPumlBtn) reRenderPumlBtn.style.display = "none";
         if (resetPumlBtn) resetPumlBtn.style.display = "none";
-        toggleEditorBtn.textContent = IconLib.svg("pencil", 14) + " 开启在线编辑";
+        toggleEditorBtn.innerHTML = IconLib.svg("pencil", 14) + " 开启在线编辑";
       } else {
         plantumlEditor.value = plantumlCode.textContent || "";
         plantumlEditor.style.display = "block";
         plantumlCode.style.display = "none";
         if (reRenderPumlBtn) reRenderPumlBtn.style.display = "inline-flex";
         if (resetPumlBtn) resetPumlBtn.style.display = "inline-flex";
-        toggleEditorBtn.textContent = IconLib.svg("eye", 14) + " 退出编辑视图";
+        toggleEditorBtn.innerHTML = IconLib.svg("eye", 14) + " 退出编辑视图";
         plantumlEditor.focus();
       }
     });
@@ -1043,7 +1002,7 @@ document.addEventListener("DOMContentLoaded", () => {
         showError("重绘失败：" + (err.message || "服务异常"));
       } finally {
         reRenderPumlBtn.disabled = false;
-        reRenderPumlBtn.textContent = IconLib.svg("refresh-cw", 14) + " 立即重绘当前代码";
+        reRenderPumlBtn.innerHTML = IconLib.svg("refresh-cw", 14) + " 立即重绘当前代码";
       }
     });
   }

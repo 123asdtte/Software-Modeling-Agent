@@ -285,7 +285,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } finally {
         skeletonBox.style.display = "none";
         btnGeneratePackage.disabled = false;
-        btnGeneratePackage.textContent = `${IconLib.svg("rocket", 14)} 一键联产教学全案（生成级别）`;
+        btnGeneratePackage.innerHTML = `${IconLib.svg("rocket", 14)} 一键联产教学全案（生成级别）`;
       }
     });
   }
