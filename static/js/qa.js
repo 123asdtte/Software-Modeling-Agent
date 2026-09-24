@@ -187,13 +187,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (sources.length > 0) {
       htmlContent += `
         <details class="sources-details">
-          <summary>📚 教材来源引用（${sources.length} 条关联）</summary>
+          <summary>${IconLib.svg("book-open", 14)}  教材来源引用（${sources.length} 条关联）</summary>
           <div class="sources-list">
             ${sources
               .map(
                 (s) => `
               <div class="source-item">
-                <div class="source-filename">📄 ${escapeHtml(s.source || "软件工程建模教材")}</div>
+                <div class="source-filename">${IconLib.svg("file-text", 14)} ${escapeHtml(s.source || "软件工程建模教材")}</div>
                 <div class="source-snippet">${escapeHtml(s.snippet || "")}</div>
               </div>
             `

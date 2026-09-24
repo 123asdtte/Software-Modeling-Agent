@@ -104,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
     toast.style.bottom = "28px";
     toast.style.left = "50%";
     toast.style.transform = "translateX(-50%) translateY(20px)";
-    toast.style.backgroundColor = isSuccess ? "rgba(15, 23, 42, 0.9)" : "rgba(220, 38, 38, 0.9)";
+    toast.style.backgroundColor = isSuccess ? "rgba(24, 24, 27, 0.9)" : "rgba(220, 38, 38, 0.9)";
     toast.style.color = "#ffffff";
     toast.style.padding = "8px 18px";
     toast.style.borderRadius = "20px";
@@ -279,13 +279,13 @@ document.addEventListener("DOMContentLoaded", () => {
         currentLessonData = data.lesson;
         currentTasksheetData = data.tasksheet;
         renderPackageResults(data);
-        showToast("🎉 教学全案三件套联产成功！全套教学文件已生成完毕。");
+        showToast(`${IconLib.svg("party-popper", 14)} 教学全案三件套联产成功！全套教学文件已生成完毕。`);
       } catch (err) {
         showError(err.message || "全案联产服务响应超时或异常，请稍后重试");
       } finally {
         skeletonBox.style.display = "none";
         btnGeneratePackage.disabled = false;
-        btnGeneratePackage.textContent = "🚀 一键联产教学全案（生成级别）";
+        btnGeneratePackage.innerHTML = `${IconLib.svg("rocket", 14)} 一键联产教学全案（生成级别）`;
       }
     });
   }
@@ -568,7 +568,7 @@ document.addEventListener("DOMContentLoaded", () => {
             pg.note
               ? `
             <details class="page-note-details">
-              <summary>💡 讲授指导要点</summary>
+              <summary>${IconLib.svg("lightbulb", 14)} 讲授指导要点</summary>
               <p style="margin-top: 4px;">${escapeHtml(pg.note)}</p>
             </details>
           `
@@ -739,7 +739,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   presToggleNotesBtn.addEventListener("click", () => {
     presShowNotes = !presShowNotes;
-    presToggleNotesBtn.style.color = presShowNotes ? "#60a5fa" : "#ffffff";
+    presToggleNotesBtn.style.color = presShowNotes ? "#e4e4e7" : "#ffffff";
     renderCurrentPresSlide();
   });
 
@@ -1143,7 +1143,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <strong>操作指引：</strong>${escapeHtml(s.guide)}
         </div>
         <div class="task-step-checkpoint">
-          <span style="font-weight: 700; color: var(--color-primary);">✓ 关键检验点：</span>
+          <span style="font-weight: 700; color: var(--color-primary);">${IconLib.svg("check", 14)} 关键检验点：</span>
           <span>${escapeHtml(s.checkpoint)}</span>
         </div>
       `;
@@ -1169,11 +1169,11 @@ document.addEventListener("DOMContentLoaded", () => {
       pit.className = "pitfall-card";
       pit.innerHTML = `
         <div class="pitfall-title">
-          <span>❌</span>
+          <span>${IconLib.svg("circle-x", 14)}</span>
           <span>${escapeHtml(p.trap)}</span>
         </div>
         <div class="pitfall-solution">
-          <strong>💡 避坑纠错：</strong>${escapeHtml(p.solution)}
+          <strong>${IconLib.svg("lightbulb", 14)} 避坑纠错：</strong>${escapeHtml(p.solution)}
         </div>
       `;
       tasksheetPitfallsContainer.appendChild(pit);
@@ -1299,7 +1299,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const typeBadges = {
-      package: '<span class="badge badge-primary" style="background: linear-gradient(135deg,#2563eb,#7c3aed); color:#fff;">⚡ 教学全案</span>',
+      package: `<span class="badge badge-primary" style="background: linear-gradient(135deg,#18181b,#52525b); color:#fff;">${IconLib.svg("zap", 14)} 教学全案</span>`,
       ppt: '<span class="badge badge-warning">PPT 课件</span>',
       lesson: '<span class="badge badge-success">高职教案</span>',
       tasksheet: '<span class="badge badge-primary">实训工单</span>',
@@ -1312,7 +1312,7 @@ document.addEventListener("DOMContentLoaded", () => {
       card.innerHTML = `
         <div class="history-item-top">
           ${typeBadges[d.type] || '<span class="badge badge-info">教学资源</span>'}
-          <button type="button" class="btn-delete-draft" data-id="${d.id}" style="background: none; border: none; color: var(--color-text-muted); cursor: pointer; font-size: 12px;" title="删除草稿">✕</button>
+          <button type="button" class="btn-delete-draft" data-id="${d.id}" style="background: none; border: none; color: var(--color-text-muted); cursor: pointer; font-size: 12px;" title="删除草稿">${IconLib.svg("x", 14)}</button>
         </div>
         <div class="history-item-title">${escapeHtml(d.title)}</div>
         <div class="history-item-meta">保存时间：${escapeHtml(d.createdAt)}</div>
@@ -1421,7 +1421,7 @@ document.addEventListener("DOMContentLoaded", () => {
         md += `- ${b}\n`;
       });
       if (pg.note) {
-        md += `> 💡 讲授指导要点：${pg.note}\n`;
+        md += `> ${IconLib.svg("lightbulb", 14)} 讲授指导要点：${pg.note}\n`;
       }
       md += "\n";
     });
@@ -1439,31 +1439,31 @@ document.addEventListener("DOMContentLoaded", () => {
   <title>${escapeHtml(title)} - 交互演示幻灯片</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; padding: 32px; overflow: hidden; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #131316; color: #fafafa; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; padding: 32px; overflow: hidden; }
     .top { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 16px; }
     .main { flex: 1; display: flex; align-items: center; justify-content: center; }
-    .card { background: #1e293b; border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; width: 100%; max-width: 960px; min-height: 460px; padding: 48px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: space-between; }
+    .card { background: #232326; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; width: 100%; max-width: 960px; min-height: 460px; padding: 48px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: space-between; }
     .heading { font-size: 28px; font-weight: 800; color: #f8fafc; margin-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 16px; display: flex; justify-content: space-between; }
     .bullets { list-style: none; display: flex; flex-direction: column; gap: 16px; }
-    .bullets li { font-size: 20px; line-height: 1.6; color: #cbd5e1; display: flex; align-items: flex-start; gap: 12px; }
-    .bullets li::before { content: "•"; color: #3b82f6; font-size: 28px; line-height: 1; }
-    .note { margin-top: 24px; background: rgba(59,130,246,0.12); border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 4px; font-size: 14px; color: #93c5fd; }
+    .bullets li { font-size: 20px; line-height: 1.6; color: #a1a1aa; display: flex; align-items: flex-start; gap: 12px; }
+    .bullets li::before { content: "•"; color: #e4e4e7; font-size: 28px; line-height: 1; }
+    .note { margin-top: 24px; background: rgba(255,255,255,0.06); border-left: 4px solid #e4e4e7; padding: 12px 16px; border-radius: 4px; font-size: 14px; color: #a1a1aa; }
     .bottom { display: flex; justify-content: space-between; align-items: center; }
     .btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px 18px; border-radius: 8px; font-size: 14px; cursor: pointer; }
-    .btn:hover { background: #1d4ed8; }
+    .btn:hover { background: #3f3f46; }
   </style>
 </head>
 <body>
   <div class="top">
     <div style="font-size: 18px; font-weight: 700;">${escapeHtml(title)}</div>
-    <div id="counter" style="color: #94a3b8;">1 / 1</div>
+    <div id="counter" style="color: #a1a1aa;">1 / 1</div>
   </div>
   <div class="main">
     <div class="card">
       <div>
         <div class="heading">
           <span id="slide-title">第一讲</span>
-          <span id="slide-time" style="font-size: 14px; color: #60a5fa;">10 分钟</span>
+          <span id="slide-time" style="font-size: 14px; color: #e4e4e7;">10 分钟</span>
         </div>
         <ul class="bullets" id="slide-bullets"></ul>
       </div>
@@ -1471,7 +1471,7 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
   </div>
   <div class="bottom">
-    <span style="color: #64748b; font-size: 13px;">按键盘 ← / → 或空格键快速翻页</span>
+    <span style="color: #71717a; font-size: 13px;">按键盘 ← / → 或空格键快速翻页</span>
     <div>
       <button class="btn" id="prev">上一页</button>
       <button class="btn" id="next">下一页</button>
@@ -1494,7 +1494,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ul.appendChild(li);
       });
       const noteBox = document.getElementById("slide-note");
-      if(p.note) { noteBox.style.display = "block"; noteBox.textContent = "💡 备课要点：" + p.note; }
+      if(p.note) { noteBox.style.display = "block"; noteBox.innerHTML = IconLib.svg("lightbulb", 14) + " 备课要点："; }
       else { noteBox.style.display = "none"; }
     }
     document.getElementById("prev").onclick = () => { if(cur > 0) { cur--; render(); } };

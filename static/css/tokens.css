@@ -1,20 +1,40 @@
 :root {
-  /* 4.1 色彩 token（写入 tokens.css 的 CSS 变量） */
-  --color-primary: #1a56db;
-  --color-primary-hover: #1e429f;
-  --color-primary-light: #e1effe;
-  --color-primary-surface: #f0f6ff;
-  --color-primary-border: #bfdbfe;
+  /* ==========================================================
+     设计体系：单色极简（monochrome minimalist）
+     对齐参考稿 m5-teaching-platform：zinc 灰阶 + 近黑主色 +
+     12px 圆角 + 细边框 + 极轻分层阴影。状态色（成功/警告/错误）
+     按参考稿保留功能色相。布局尺寸类令牌一律不动。
+     ========================================================== */
 
-  --color-bg: #f8fafc;
+  /* brand 色阶（参考稿 zinc ramp）——供图表/色条/深浅面板取用 */
+  --brand-50: #fafafa;
+  --brand-100: #f4f4f5;
+  --brand-200: #e4e4e7;
+  --brand-300: #d4d4d8;
+  --brand-400: #a1a1aa;
+  --brand-500: #71717a;
+  --brand-600: #52525b;
+  --brand-700: #3f3f46;
+  --brand-800: #27272a;
+  --brand-900: #18181b;
+
+  /* 4.1 色彩 token（变量名不变，值切换为单色体系） */
+  --color-primary: var(--brand-900);
+  --color-primary-hover: var(--brand-800);
+  --color-primary-light: var(--brand-100);
+  --color-primary-surface: var(--brand-50);
+  --color-primary-border: var(--brand-300);
+
+  --color-bg: var(--brand-50);
   --color-surface: #ffffff;
-  --color-surface-subtle: #f1f5f9;
-  --color-border: #e2e8f0;
-  --color-border-subtle: #edf2f7;
+  --color-surface-subtle: #f5f5f5;
+  --color-surface-muted: var(--color-surface-subtle);
+  --color-border: var(--brand-200);
+  --color-border-subtle: var(--brand-100);
 
-  --color-text: #0f172a;
-  --color-text-secondary: #64748b;
-  --color-text-muted: #94a3b8;
+  --color-text: var(--brand-900);
+  --color-text-secondary: var(--brand-500);
+  --color-text-muted: var(--brand-400);
 
   --color-success: #16a34a;
   --color-success-light: #f0fdf4;
@@ -28,20 +48,49 @@
   --color-error-light: #fef2f2;
   --color-error-border: #fecaca;
 
-  --color-info: #0284c7;
-  --color-info-light: #f0f9ff;
-  --color-info-border: #bae6fd;
+  /* info 由天蓝转为中性灰蓝——单色体系中信息类不再带彩色倾向 */
+  --color-primary-foreground: #ffffff;
 
-  /* 4.2 字体与字号 */
-  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  /* 状态色深浅衍生（悬停加深底/强文本用） */
+  --color-error-muted: #fee2e2;
+  --color-error-strong: #991b1b;
+  --color-warning-muted: #fef3c7;
+  --color-warning-strong: #92400e;
+  --color-warning-stronger: #78350f;
+
+  /* 聚焦环 */
+  --focus-ring: 0 0 0 3px rgba(24, 24, 27, 0.12);
+  --focus-ring-error: 0 0 0 3px rgba(220, 38, 38, 0.1);
+
+  --color-info: var(--brand-600);
+  --color-info-light: var(--brand-100);
+  --color-info-border: var(--brand-300);
+
+  /* 数据可视化：单色明度梯度（替代原四色相色条） */
+  --chart-1: var(--brand-400);
+  --chart-2: var(--brand-500);
+  --chart-3: var(--brand-700);
+  --chart-4: var(--brand-900);
+  --chart-5: var(--brand-300);
+
+  /* 深色面板基色（放映模式 / 代码编辑器：slate 蓝灰 → 纯灰 zinc） */
+  --dark-panel: var(--brand-900);
+  --dark-panel-raised: var(--brand-800);
+  --dark-panel-border: var(--brand-700);
+  --dark-text: var(--brand-50);
+  --dark-text-secondary: var(--brand-400);
+
+  /* 4.2 字体与字号（字号体系不动，仅新增衬线数字字体） */
+  --font-family: Geist, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-serif: "DM Serif Display", Georgia, "Times New Roman", "Songti SC", serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --font-size-title: 22px;
   --font-size-card-title: 16px;
   --font-size-body: 14px;
   --font-size-aux: 12px;
   --line-height-base: 1.6;
 
-  /* 4.3 间距 / 圆角 / 阴影 */
+  /* 4.3 间距 / 圆角 / 阴影（间距不动；圆角对齐参考稿 12px 基准） */
   --spacing-1: 4px;
   --spacing-2: 8px;
   --spacing-3: 12px;
@@ -49,14 +98,17 @@
   --spacing-6: 24px;
   --spacing-8: 32px;
 
-  --radius-card: 10px;
+  --radius-card: 12px;
   --radius-input: 6px;
   --radius-badge: 999px;
+  --radius-md: var(--radius-card);
 
-  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
-  --shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.06);
-  --shadow-card-hover: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
-  --shadow-popover: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+  /* 阴影：参考稿的极轻分层投影（比原蓝色阴影更收敛） */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-card: 0 1px 2px 0 rgba(0, 0, 0, 0.05), 0 1px 1px 0 rgba(0, 0, 0, 0.03);
+  --shadow-card-hover: 0 4px 8px -2px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-popover: 0 12px 20px -6px rgba(0, 0, 0, 0.08), 0 4px 8px -2px rgba(0, 0, 0, 0.04);
+  --shadow-overlay: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
 
   --container-max-width: 1120px;
   --transition-fast: 0.15s ease;
