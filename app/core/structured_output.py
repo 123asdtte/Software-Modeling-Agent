@@ -93,7 +93,10 @@ def _balanced_json(text: str) -> dict:
 
 
 def extract_json(text: str) -> dict:
-    """从模型输出提取 JSON：优先 ```json 围栏，其次平衡大括号扫描。"""
+    """从模型输出提取 JSON：剥离 think 标签 → ```json 围栏 → 平衡大括号扫描。"""
+    # 推理模型（glm-5.3-flash 等）可能把思维链以 <think>...</think> 混入正文，
+    # 其中可能含误导性的大括号，必须先剥离再扫描
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
     fenced = _FENCED_RE.search(text)
     if fenced:
         return json.loads(fenced.group(1))
