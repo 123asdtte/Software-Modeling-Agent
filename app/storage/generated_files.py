@@ -19,7 +19,8 @@ from app.config.settings import get_settings, resolve_project_path
 ALLOWED_EXTENSIONS: dict[str, set[str]] = {
     "ppt": {"pptx"},
     "lesson": {"docx"},
-    "uml": {"png", "svg", "drawio"},
+    # drawio 可编辑源码以 .xml 后缀交付（diagrams.net 可直接打开/导入）
+    "uml": {"png", "svg", "drawio", "xml"},
 }
 
 
