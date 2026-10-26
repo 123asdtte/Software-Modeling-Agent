@@ -184,7 +184,7 @@ const GlobalProgressBar = (function () {
 // 挂载到全局
 window.GlobalProgressBar = GlobalProgressBar;
 
-async function apiPost(path, body, { timeoutMs = 60000, showProgress = true, label } = {}) {
+async function apiPost(path, body, { timeoutMs = 180000, showProgress = true, label } = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 

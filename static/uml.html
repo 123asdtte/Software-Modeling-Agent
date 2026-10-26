@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI 教学智能体平台 - UML 建模</title>
-  <link rel="stylesheet" href="css/tokens.css">
-  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/tokens.css?v=20261009f">
+  <link rel="stylesheet" href="css/main.css?v=20261009g">
 </head>
 <body>
   <main class="main-content" id="main-container">
@@ -22,7 +22,7 @@
             </svg>
             描述你的建模需求
           </h1>
-          <p class="card-subtitle">输入一句话业务需求，智能生成 UML 用例图、规范质检报告与 PlantUML 源码</p>
+          <p class="card-subtitle">输入一句话业务需求，智能生成 UML 用例图 / 活动图 / 状态机图 / 类图 / 时序图 / 部署图，并附规范质检报告与 PlantUML / draw.io 源码</p>
         </div>
         <span class="badge badge-info" style="font-weight: 500;">按 Ctrl + ↵ 快速生成</span>
       </div>
@@ -55,6 +55,9 @@
         <button type="button" class="chip-item" data-example="患者可以按科室在线预约挂号、在线支付诊疗费用；门诊主治医师负责接诊患者并开具电子处方；药房药剂师核对处方并发药。">医院门诊导诊开方 (多角色联动)</button>
         <button type="button" class="chip-item" data-example="储户可在 ATM 自助终端执行插卡鉴权、查询余额、存取现金和跨行转账；系统在取款时必须校验账户余额与日限额，并在钞箱异常时向运维告警。">银行 ATM 自助终端 (状态安全)</button>
         <button type="button" class="chip-item" data-example="买家可在电商平台浏览商品、加入购物车、申请售后与确认收货；订单微服务必须在支付成功后调度库存微服务扣减库存；物流系统跟踪发货派送动态。">电商微服务订单架构 (技能大赛题)</button>
+        <button type="button" class="chip-item" data-example="校园选课系统包含学生、教师、课程与选课记录四类核心对象；学生可提交选课申请，教师可发布课程与录入成绩，课程与选课记录之间是一对多组合关系。">校园选课系统类图 (结构建模)</button>
+        <button type="button" class="chip-item" data-example="学生提交选课请求，选课控制器先校验课程容量与先修条件，再调用课程仓储保存选课记录；容量不足时返回失败提示，成功时返回选课结果。">选课交互时序图 (动态建模)</button>
+        <button type="button" class="chip-item" data-example="系统部署在 K8s 集群：外部流量经 Nginx Ingress 进入，转发到 order-service 与 course-service 两个 Service，再路由到各自 Pod；服务共享 MySQL 主从集群与 Redis 缓存。">K8s 微服务部署图 (架构建模)</button>
       </div>
 
       <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--color-border-subtle);">
@@ -74,12 +77,19 @@
           </select>
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
-          <label for="export-format-select" class="form-label" style="margin-bottom: 0;">可编辑源码导出：</label>
-          <select id="export-format-select" class="form-select" style="width: 170px; height: 36px; padding: 4px 8px;">
-            <option value="both" selected>PlantUML + draw.io（推荐）</option>
-            <option value="drawio">draw.io 文件 (.drawio)</option>
-            <option value="plantuml">PlantUML 源码 (.puml)</option>
+          <label for="diagram-type-select" class="form-label" style="margin-bottom: 0;">图型：</label>
+          <select id="diagram-type-select" class="form-select" style="width: 170px; height: 36px; padding: 4px 8px;">
+            <option value="auto" selected>自动识别（推荐）</option>
+            <option value="usecase">用例图 Use Case</option>
+            <option value="activity">活动图 Activity</option>
+            <option value="statemachine">状态机图 State</option>
+            <option value="class">类图 Class</option>
+            <option value="sequence">时序图 Sequence</option>
+            <option value="deployment">部署图 Deployment</option>
           </select>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+
         </div>
         <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
           <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--color-text-secondary); cursor: pointer;">
@@ -92,7 +102,7 @@
               <polyline points="2 17 12 22 22 17"></polyline>
               <polyline points="2 12 12 17 22 12"></polyline>
             </svg>
-            生成用例图与规范质检
+            生成 UML 模型与规范质检
           </button>
         </div>
       </div>
@@ -128,7 +138,7 @@
         <div class="kpi-card" id="kpi-system-card">
           <div class="kpi-icon-wrap kpi-icon-blue"><i data-icon="landmark"></i></div>
           <div class="kpi-content">
-            <span class="kpi-label">目标系统边界</span>
+            <span class="kpi-label" id="kpi-system-label">目标系统边界</span>
             <span class="kpi-value" id="kpi-system-name">-</span>
             <span class="kpi-subtext">System Boundary</span>
           </div>
@@ -136,7 +146,7 @@
         <div class="kpi-card" id="kpi-actors-card" style="cursor: pointer;" title="点击切换至要素清单查看参与者">
           <div class="kpi-icon-wrap kpi-icon-purple"><i data-icon="user"></i></div>
           <div class="kpi-content">
-            <span class="kpi-label">识别参与者 (Actors)</span>
+            <span class="kpi-label" id="kpi-actors-label">识别参与者 (Actors)</span>
             <span class="kpi-value" id="kpi-actors-count">0 位</span>
             <span class="kpi-subtext" id="kpi-actors-detail">主/次角色解析</span>
           </div>
@@ -144,15 +154,15 @@
         <div class="kpi-card" id="kpi-usecases-card" style="cursor: pointer;" title="点击切换至要素清单查看用例">
           <div class="kpi-icon-wrap kpi-icon-green"><i data-icon="package"></i></div>
           <div class="kpi-content">
-            <span class="kpi-label">核心用例 (Use Cases)</span>
+            <span class="kpi-label" id="kpi-usecases-label">核心用例 (Use Cases)</span>
             <span class="kpi-value" id="kpi-usecases-count">0 个</span>
-            <span class="kpi-subtext">单意图粒度建模</span>
+            <span class="kpi-subtext" id="kpi-usecases-detail">单意图粒度建模</span>
           </div>
         </div>
         <div class="kpi-card" id="kpi-relations-card" style="cursor: pointer;" title="点击查看关系">
           <div class="kpi-icon-wrap" style="background: var(--color-warning-light); color: var(--color-warning);"><i data-icon="link"></i></div>
           <div class="kpi-content">
-            <span class="kpi-label">规约高级关系</span>
+            <span class="kpi-label" id="kpi-relations-label">规约高级关系</span>
             <span class="kpi-value" id="kpi-relations-count">2 include</span>
             <span class="kpi-subtext" id="kpi-relations-detail">包含 / 扩展</span>
           </div>
@@ -177,7 +187,7 @@
                 <circle cx="8.5" cy="8.5" r="1.5"></circle>
                 <polyline points="21 15 16 10 5 21"></polyline>
               </svg>
-              用例模型画布
+              <span id="preview-col-title-text">用例模型画布</span>
             </h2>
             <div style="display: flex; align-items: center; gap: 8px;">
               <button type="button" id="btn-open-copilot" class="btn btn-secondary" style="display: none; padding: 6px 12px; font-size: 13px;">
@@ -219,14 +229,6 @@
                 </svg>
                 下载 PNG (drawio 版式)
               </a>
-            <a id="download-svg-btn" href="#" download class="btn btn-primary" style="display: none; padding: 6px 12px; font-size: 13px;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-                下载 SVG
-              </a>
             </div>
           </div>
 
@@ -267,6 +269,7 @@
             <div id="image-display-area" class="image-canvas-box" style="flex: 1;">
               <div class="image-canvas-viewport" id="canvas-viewport">
                 <img id="uml-image" src="" alt="UML 用例图生成结果" style="display: none;" title="点击放大查看全屏">
+                <div id="uml-drawio-viewer" style="display: none; width: 100%; align-self: flex-start; background: #ffffff; border: 1px solid #dddddd;"></div>
               </div>
             </div>
 
@@ -414,38 +417,22 @@
             </div>
           </div>
 
-          <!-- Tab View 2: Model Elements View -->
+          <!-- Tab View 2: Model Elements View (按图型动态渲染) -->
           <div id="view-model-elements" style="display: none;" class="model-elements-box">
-            <div>
-              <div class="elements-section-header">
-                <span><i data-icon="users"></i> 识别的参与者 (Actors)</span>
-                <span style="font-size: 11px; color: var(--color-text-secondary);" id="model-actors-count-text">共 0 位</span>
-              </div>
-              <div class="actors-chip-group" id="model-actors-container">
-                <!-- Rendered dynamically -->
-              </div>
-            </div>
+            <div id="model-elements-body"></div>
 
-            <div>
+            <!-- 类图专属：类模型 → Java 骨架代码 -->
+            <div id="class-code-panel" style="display: none; margin-top: 20px; border-top: 1px dashed var(--color-border); padding-top: 16px;">
               <div class="elements-section-header">
-                <span><i data-icon="package"></i> 用例业务清单 (Use Cases)</span>
-                <span style="font-size: 11px; color: var(--color-text-secondary);" id="model-usecases-count-text">共 0 个用例</span>
+                <span><i data-icon="file-text"></i> 正向工程：类图 → Java 骨架代码</span>
+                <button id="gen-class-code-btn" class="btn btn-primary" style="font-size: 12px; padding: 4px 12px;" type="button">
+                  生成骨架代码
+                </button>
               </div>
-              <div style="overflow-x: auto;">
-                <table class="usecase-element-table">
-                  <thead>
-                    <tr>
-                      <th style="width: 75px;">用例 ID</th>
-                      <th style="width: 130px;">用例名称</th>
-                      <th style="width: 100px;">关联参与者</th>
-                      <th>业务目标 (Goal)</th>
-                    </tr>
-                  </thead>
-                  <tbody id="model-usecases-tbody">
-                    <!-- Rendered dynamically -->
-                  </tbody>
-                </table>
+              <div id="class-code-status" style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 8px;">
+                按当前类图生成可编译的 Java 类/接口骨架（方法体为 TODO 占位），用于课程「类图正向工程」环节。
               </div>
+              <div id="class-code-output"></div>
             </div>
           </div>
         </div>
@@ -454,7 +441,7 @@
       <!-- Collapsible PlantUML Source Block & Live Editor -->
       <details class="code-details" id="plantuml-details" style="margin-top: 24px;" open>
         <summary style="display: flex; align-items: center; justify-content: space-between;">
-          <span><i data-icon="monitor"></i> PlantUML 源码与实时调优工作区 (model.puml)</span>
+          <span><i data-icon="monitor"></i> 源码与实时调优工作区 (PlantUML / draw.io)</span>
           <span style="font-size: 12px; font-weight: normal; color: var(--color-text-secondary);">点击收起/展开</span>
         </summary>
         <div class="code-details-body">
@@ -506,7 +493,7 @@
                 <line x1="12" y1="16" x2="12.01" y2="16"></line>
               </svg>
             </div>
-            <h3 class="modal-title" id="confirm-modal-title">确认生成 UML 用例模型？</h3>
+            <h3 class="modal-title" id="confirm-modal-title">确认生成 UML 模型？</h3>
           </div>
           <button type="button" class="modal-close-btn" id="confirm-modal-close-btn" aria-label="关闭">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -541,7 +528,7 @@
               <line x1="12" y1="16" x2="12" y2="12"></line>
               <line x1="12" y1="8" x2="12.01" y2="8"></line>
             </svg>
-            <span>点击确认后将启动后端大模型语义解析与 PlantUML 渲染引擎，预计耗时 30~60 秒，完成后将输出架构用例图与教学质检报告。</span>
+            <span>点击确认后将启动后端大模型语义解析与 PlantUML 渲染引擎，预计耗时 30~60 秒，完成后将输出 UML 模型图与教学质检报告。</span>
           </div>
         </div>
         <div class="modal-footer">
@@ -588,9 +575,10 @@
     </div>
   </main>
 
-  <script src="js/icons.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/layout.js"></script>
-  <script src="js/uml.js"></script>
+  <script src="js/icons.js?v=20261009g"></script>
+  <script src="js/api.js?v=20261009g"></script>
+  <script src="js/layout.js?v=20261009g"></script>
+  <script src="js/viewer.min.js"></script>
+  <script src="js/uml.js?v=20261009g"></script>
 </body>
 </html>
