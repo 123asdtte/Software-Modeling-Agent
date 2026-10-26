@@ -4,7 +4,7 @@
 
 > 教材源稿（`docs/02-需求文档PRD/_教材源稿提取/`，docx 提取稿）自 2026-09-22 起随仓库分发；docx/pdf 原件仍不进 Git。授权事宜请联系文档提供方确认。
 
-## 当前进度（W2：教材知识库 + 智能问答 Agent）
+## 当前进度（已完成至 M5：教材问答 + PPT/教案生成 + UML 全链路 + 前端 + Docker 部署）
 
 ### W1（已完成）
 - [x] 项目骨架（app/ 目录结构、FastAPI 入口）
@@ -34,17 +34,29 @@
   - 端到端实测：9 字段无缺失 / 流程 6 环节 / docx 39KB；耗时 219s（同上）
 - [x] 大模型切换 TokenRhythm 平台（glm-5.3-flash，OpenAI 兼容；原 DeepSeek 余额耗尽）
 - [x] M4 UML 用例图 Agent（W4-W5）：领域模型（契约冻结）→ 规则引擎 7 条 → PlantUML 源码渲染 → PNG/SVG 本地渲染（真实 Java v1.2026.8）→ `POST /v1/uml/usecase`（render/format + 质检报告 + 下载链接）；158 项测试
+- [x] M4+ UML 图型扩展（对齐课程模块二/三/四）：新增 **类图 / 时序图 / 部署图** 三种图型（模型契约 + 规则引擎 + PlantUML 渲染 + `/v1/uml/generate` 自动识别），并实现 **类图 → Java 骨架代码正向工程**（`POST /v1/uml/class-code`）；6 图型全程复用同一 8 层链路，PlantUML 与 draw.io 双导出，测试 528 项全绿、覆盖率 88%
 - [x] M5 Web 展示（W5）：四页静态前端（首页/UML 建模/教材问答/课件教案）真实接口对接 + Playwright 浏览器端到端验证 8 项 PASS；Docker 单容器部署配置（Python 3.12 + JRE 17 + 预构建索引）
 
 ## 性能与成本预期（演示须知）
 
+> 以下为 **2026-10-26 实测值**（讯飞 Spark-X2.6，`/v1/uml/generate` 全链路含 LLM + 质检 + 渲染）。
+> 模型侧响应波动较大，同一请求三次实测可差 2 倍，演示时请预留等待时间。
+
 | 项 | 实测值 | 说明 |
 |---|---|---|
-| hybrid 检索 | ~1.1s | 每问多一次 LLM 关键词抽取调用（有 llm_response_cache 缓存时更快）；纯 naive 模式 ~0.7s |
-| QA 生成 | ~10s | deepseek-flash 推理模型，reasoning 占用生成时间 |
-| 端到端 /v1/qa | ~12s | 演示时提前预热（首问触发索引加载 + 模型下载校验会更慢） |
+| 用例图 / 部署图 | 12–35s | 元素少，最快 |
+| 活动图 / 状态机图 | 28–40s | 中等 |
+| 时序图 | 75–80s | 消息 + 片段较多 |
+| **类图** | **90–110s** | 类/属性/方法输出 token 最多，**最慢** |
+| 教材问答 `/v1/qa` | 40–80s | 同一问题三次实测 39.5 / 52.3 / 81.3s，无稳定缓存加速 |
+| PPT 生成 `/v1/ppt` | ~107s | 含大纲 + 分节并发生成 + 渲染 |
+| 教案生成 `/v1/lesson` | ~32s | |
+| 类图→Java `/v1/uml/class-code` | <0.1s | 纯本地模板，不调 LLM |
 | 上下文预算 | ≤12000 字符 | 检索层 token 预算 + 应用层截断双保险 |
-| 并发 | 3 路 | 超出被 Semaphore 串行化；超 60s 返回 504 |
+| 并发 | 3 路（QA）/ 2 路（生成） | 超出被 Semaphore 串行化；UML 超 240s 返回 504 |
+
+**演示建议**：类图和问答耗时较长，前端按钮已显示「已用秒数 / 约需秒数」实时计时；
+正式演示前先跑一遍 `demo_regression.py` 预热，并准备好截图兜底。
 
 ## 快速开始
 
@@ -55,9 +67,9 @@ python -m venv .venv
 pip install -r requirements.txt
 
 # 2. 配置密钥
-copy .env.example .env        # 填入 DEEPSEEK_API_KEY（已配置则跳过）
+copy .env.example .env        # 将 DEEPSEEK_API_KEY 字段值替换为当前模型平台 Key（现为讯飞 MaaS Spark-X2.6，详见 .env 注释；已配置则跳过）
 
-# 3. 构建知识库（首次会下载 Embedding 模型；需 DeepSeek 余额做实体抽取）
+# 3. 构建知识库（首次会下载 Embedding 模型；实体抽取需可用 LLM Key）
 python -m app.knowledge_base.build
 
 # 4. 启动服务
@@ -79,7 +91,7 @@ PlantUML 经典引擎出图依赖本地 `tools/plantuml.jar`（二进制不进 G
 mkdir -p tools
 # GitHub 直连慢/被墙时，可用镜像 + 断点续传（-C -）多试几次直到 java -jar 校验通过：
 curl -L -C - -o tools/plantuml.jar \
-  "https://ghfast.top/https://github.com/plantuml/plantuml/releases/download/v1.2025.7/plantuml-1.2025.7.jar"
+  "https://ghfast.top/https://github.com/plantuml/plantuml/releases/download/v1.2026.8/plantuml-1.2026.8.jar"
 # 校验（应输出版本号而非 "Invalid or corrupt jarfile"）：
 java -jar tools/plantuml.jar -version
 ```
@@ -88,47 +100,97 @@ java -jar tools/plantuml.jar -version
 
 ```
 app/
-├── main.py              # FastAPI 入口（/health、/v1/chat）
-├── config/settings.py   # 配置（.env + 默认值）
-├── models/llm.py        # 模型工厂（DeepSeek V4.1）
-├── chains/              # W2+：rag_chain / uml_chain / generation_chain
-├── agents/              # W2+：qa / ppt / lesson / uml
-├── tools/               # W2+：plantuml_tool / ppt_generator / document_reader
-├── prompts/             # W2+：qa_prompt / uml_prompt / teacher_prompt
-└── knowledge_base/      # W2+：教材源稿 / 索引（gitignore）
-tests/                   # 与 app 对应的测试
+├── main.py                  # FastAPI 入口（路由定义 + include_router）
+├── __main__.py              # 启动入口（uvicorn app.main:app）
+├── config/settings.py       # 配置（.env + 默认值，OpenAI 兼容）
+├── models/                  # 数据契约：llm / uml / review / tasksheet
+├── core/structured_output.py# 结构化输出（PPT/教案/UML 复用）
+├── chains/                  # rag_chain / generation_chain / uml_chain / uml_adjust / tasksheet_chain
+├── agents/                  # ⚠️ 空壳：多 Agent Supervisor 未实现（langgraph 未用于编排）
+├── api/                     # APIRouter 拆分：uml / tasksheet / package
+├── rules/                   # UML 规则引擎：usecase / activity / statemachine
+├── prompts/                 # qa / teacher / uml_{usecase,activity,statemachine,intent}
+├── renderers/               # plantuml / diagram_renderer(Java) / drawio_renderer / svg_renderer(纯 Python)
+├── tools/                   # ppt_generator / docx_exporter / document_reader / luobo_renderer / styles/
+├── storage/generated_files.py # 生成物落盘与清理
+└── knowledge_base/          # 教材源稿 / 索引构建（lightrag_index 已 gitignore）
+tests/                       # 测试（含 evaluation/ 评测集、integration/ 真实渲染）
+static/                      # M5 前端四页 index/qa/uml/resources + _qa_preview/package_preview 预览页
 ```
 
 ## 依赖说明
 
-| 依赖 | 用途 |
-|---|---|
-| fastapi / uvicorn | API 服务与启动 |
-| pydantic / pydantic-settings | 请求校验与配置管理 |
-| python-dotenv | 读取 .env |
-| langchain / langchain-openai | LLM 调用（OpenAI 兼容接口接 DeepSeek） |
-| langgraph | W3+ 多 Agent 编排 |
-| lightrag-hku | 知识库索引与检索（RAG 引擎） |
-| fastembed / numpy | 中文向量化（bge-small-zh-v1.5，离线 ONNX） |
-| python-docx / pypdf | 教材 docx/pdf 解析 |
-| pytest / ruff | 测试与静态检查 |
+| 依赖 | 用途 | 现状 |
+|---|---|---|
+| fastapi / uvicorn | API 服务与启动 | ✅ |
+| pydantic / pydantic-settings | 请求校验与配置管理 | ✅ |
+| python-dotenv | 读取 .env | ✅ |
+| langchain / langchain-openai / openai / httpx | LLM 调用（OpenAI 兼容接口；当前配置讯飞 MaaS **Spark-X2.6**） | ✅ |
+| langgraph | 依赖已安装，但**多 Agent 编排尚未实现**（`app/agents/` 为空壳，未实际使用） | ⚠️ 预留 |
+| lightrag-hku | 知识库索引与检索（RAG 引擎，内置存储） | ✅ |
+| fastembed / numpy | 中文向量化（bge-small-zh-v1.5，离线 ONNX） | ✅ |
+| python-docx / pypdf / python-pptx | 教材 docx/pdf 解析、PPT 输出 | ✅ |
+| pytest / ruff | 测试与静态检查 | ✅ |
+
+> 说明：模型接入走 OpenAI 兼容协议，`BASE_URL` / `MODEL_NAME` / `DEEPSEEK_API_KEY`（字段名历史遗留，实际填当前平台 Key）在 `.env` 配置；切换模型只需改 `.env`，无需改代码。UML 出图有两条路径：① PlantUML 经典引擎需本地 `tools/plantuml.jar` + **JRE 17**（缺失自动降级为仅源码）；② `drawio_renderer` / `svg_renderer` 为**纯 Python** 渲染，免 Java 依赖。
 
 ## 能力状态表（防止误判项目进度，AI/新人开发前必读）
 
+> 最近核对：2026-10-26，按真实代码交叉比对（非仅文档）。
+
 | 能力 | 状态 | 代码位置 |
 |---|---|---|
-| 教材 QA（RAG） | ✅ 已实现 | `app/chains/rag_chain.py` |
-| PPT 生成 | ✅ 已实现 | `app/chains/generation_chain.py` + `app/tools/ppt_generator.py` |
+| 教材 QA（RAG） | ✅ 已实现 | `app/chains/rag_chain.py` + `app/api`（经 `/v1/qa`） |
+| PPT 生成 | ✅ 已实现 | `app/chains/generation_chain.py` + `app/tools/ppt_generator.py`（`luobo_renderer` 渲染） |
 | 教案生成 | ✅ 已实现 | `app/chains/generation_chain.py` + `app/tools/docx_exporter.py` |
-| 结构化输出工具 | ✅ 已实现 | `app/core/structured_output.py`（PPT/教案已接入，UML 复用） |
+| 结构化输出工具 | ✅ 已实现 | `app/core/structured_output.py`（PPT/教案/UML 复用） |
 | UML 用例图·领域模型 | ✅ 契约已冻结 | `app/models/uml.py` / `app/models/review.py` |
-| UML 用例图·规则引擎 | ✅ 已实现 | `app/rules/usecase_rules.py`（UC-B1/G1/R3/C1/R-DUP/R-GEN/R-REF 7 条） |
+| UML 用例图·规则引擎 | ✅ 已实现 | `app/rules/usecase_rules.py`（7 条规则） |
 | UML 用例图·源码渲染 | ✅ 已实现 | `app/renderers/plantuml.py`（确定性 alias + 显示文本转义） |
-| UML 用例图·PNG/SVG 渲染 | ✅ 已实现 | `app/renderers/diagram_renderer.py`（真实 Java，环境缺失自动降级源码） |
-| UML 用例图·API + Web 页 | ✅ 已实现 | `app/api/uml.py` + `static/uml.html`（质检报告 + 图片下载） |
-| UML 活动图 / 状态机图 | ❌ 未实现 | 仅有设计文档 |
-| 多 Agent Supervisor（LangGraph） | ❌ 未实现 | 仅有架构设计 |
-| 数据库 / FAISS·Milvus | ❌ 未实现 | RAG 用 LightRAG 内置存储 |
+| UML 用例图·PNG/SVG 渲染 | ✅ 已实现 | `app/renderers/diagram_renderer.py`（Java）+ `drawio_renderer.py` / `svg_renderer.py`（纯 Python） |
+| UML 用例图·API + Web 页 | ✅ 已实现 | `app/api/uml.py`（`/usecase` / `/render`）+ `static/uml.html` |
+| **UML 活动图** | ✅ 已实现 | `app/rules/activity_rules.py` + `app/prompts/uml_activity_prompt.py` + `chains/uml_chain.py` + `renderers`（svg/drawio）+ `app/api/uml.py`（`/generate` 支持 activity） |
+| **UML 状态机图** | ✅ 已实现 | `app/rules/statemachine_rules.py` + `app/prompts/uml_statemachine_prompt.py` + `chains/uml_chain.py` + `renderers` + `app/api/uml.py`（`/generate` 支持 statemachine） |
+| **UML 类图** | ✅ 已实现 | `app/rules/class_rules.py`（CL-* 9 条）+ `app/prompts/uml_class_prompt.py` + `chains/uml_chain.py` + `renderers/plantuml.py`（`render_class_plantuml`）+ `renderers/drawio_renderer.py`（`render_class_drawio`）+ `app/api/uml.py` |
+| **UML 时序图** | ✅ 已实现 | `app/rules/sequence_rules.py`（SQ-* 5 条）+ `app/prompts/uml_sequence_prompt.py` + `renderers/plantuml.py`（`render_sequence_plantuml`）+ `renderers/drawio_renderer.py`（`render_sequence_drawio`，生命线 + alt/loop/opt/par 片段） |
+| **UML 部署图** | ✅ 已实现 | `app/rules/deployment_rules.py`（DEP-* 5 条，含 K8s 语义校验）+ `app/prompts/uml_deployment_prompt.py` + `renderers/plantuml.py`（`render_deployment_plantuml`）+ `renderers/drawio_renderer.py`（`render_deployment_drawio`） |
+| **类图 → Java 骨架代码** | ✅ 已实现 | `app/chains/class_to_code.py` + `app/api/uml.py`（`POST /v1/uml/class-code`）；前端「要素清单」页内面板 |
+| UML 定向迭代（chat-adjust） | ✅ 已实现 | `app/chains/uml_adjust.py` + `app/api/uml.py`（`/chat-adjust`，6 种图型全覆盖） |
+| 实训任务工单（tasksheet） | ✅ 已实现（超规划） | `app/api/tasksheet.py`（`/v1/tasksheet`）+ `chains/tasksheet_chain.py` + `models/tasksheet.py`；⚠️ 正式前端未整合（仅 `_qa_preview` 预览） |
+| 三件套联产（package） | ✅ 已实现（超规划） | `app/api/package.py`（`/v1/package`：PPT+教案+工单）；⚠️ 正式前端未整合 |
+| 互评模型 | ✅ 已实现 | `app/models/review.py`（配套 UML 质检） |
+| 多 Agent Supervisor（LangGraph） | ❌ 未实现 | `app/agents/` 为空壳，langgraph 未用于编排 |
+| 数据库 / FAISS·Milvus | ❌ 未实现 | `app/database/` 不存在；RAG 用 LightRAG 内置存储，无独立用户记忆库 |
+
+## 本机快速演示（推荐，课堂/验收用）
+
+```text
+双击项目根目录的「启动服务.bat」
+```
+
+脚本会做三件事：
+
+1. 自动检测端口占用：本机 **8000 常被 Docker 容器（diet-gateway）占用**，
+   脚本按 `8000 → 8100 → 8101` 顺序回退，并在窗口打印本次实际地址；
+2. 用项目内 `.venv` 启动 uvicorn（不污染系统 Python）；
+3. 打印建模页面 / 首页 / 接口文档三个入口。
+
+> ⚠️ 演示前务必确认窗口里打印的**实际端口**，不要凭记忆写 8000。
+> 验证方式：`http://127.0.0.1:<实际端口>/health` 应返回 `"status":"ok"` 且 `"api_key_configured":true`。
+
+### 演示前一键自检
+
+服务启动后，另开一个终端跑预演脚本（真实调 LLM，覆盖老师会看到的所有入口）：
+
+```bat
+.venv\Scripts\python.exe scripts\demo_regression.py
+```
+
+它会依次跑：六图型生成（含 PNG / draw.io 可达性）→ 类图转 Java → 教材问答 → PPT / 教案，
+打印每项耗时与产物大小，结果落盘 `outputs/demo_regression_result.json`。
+**退出码 0 表示全部通过**，非 0 会列出失败项。
+
+> 默认连 `http://127.0.0.1:8100`；换端口：`set DEMO_BASE=http://127.0.0.1:8000`
 
 ## Docker 部署（可选，服务器/演示机推荐）
 
@@ -161,12 +223,12 @@ docker compose up -d --build
 | 内容 | 来源 | 说明 |
 |---|---|---|
 | 教材知识库索引 | `app/knowledge_base/lightrag_index/`（预构建，9.9MB） | 容器启动**不需要**调用 LLM 重建 |
+| PlantUML 渲染 | `tools/plantuml.jar`（v1.2026.8） | JRE 17 已装入镜像 |
+| embedding 模型 | 首次启动下载 | ~90MB，可通过卷挂载宿主机缓存跳过 |
 
 > ⚠️ 干净 clone 注意：`lightrag_index/` 不进 Git（见 .gitignore）。新机器上先运行
 > `python -m app.knowledge_base.build`（需真实 LLM Key，一次性）生成索引，或从已有部署
 > 复制该目录，否则 `docker build` 的 COPY 步骤会因目录缺失失败。
-| PlantUML 渲染 | `tools/plantuml.jar`（v1.2026.8） | JRE 17 已装入镜像 |
-| embedding 模型 | 首次启动下载 | ~90MB，可通过卷挂载宿主机缓存跳过 |
 
 ### 无 Docker 的传统部署
 
