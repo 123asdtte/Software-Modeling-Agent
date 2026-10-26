@@ -62,6 +62,7 @@ class SlidePage(BaseModel):
     bullets: list[str] = Field(default_factory=list)
     note: str = ""
     minutes: int = 3
+    section: str = ""  # 所属章节名（用于渲染章节分隔页；旧数据缺省不影响）
 
 
 class SectionPages(BaseModel):

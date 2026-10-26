@@ -58,7 +58,7 @@ async def generate_package_endpoint(req: PackageRequest) -> dict:
     # 复用 main.py 单件端点的导出链（延迟导入避免循环依赖）
     from app.chains.generation_chain import generate_lesson_plan, generate_ppt_deck_async
     from app.tools.docx_exporter import lesson_to_docx, lesson_to_markdown
-    from app.tools.ppt_generator import deck_to_pptx
+    from app.tools.luobo_renderer import render_pptx
 
     async def _run_ppt():
         async with _package_semaphore:
@@ -79,7 +79,7 @@ async def generate_package_endpoint(req: PackageRequest) -> dict:
         try:
             deck = await _run_ppt()
             out = _out_path("ppt", "pptx")
-            deck_to_pptx(deck, out)
+            render_pptx(deck, out)
             return {
                 "title": deck["outline"].get("title", req.topic),
                 "total_pages": len(deck["pages"]),

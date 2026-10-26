@@ -1,0 +1,59 @@
+{
+  "palette": {
+    "primary": "123A5E",
+    "primary_dark": "0C2742",
+    "accent": "1FA8A0",
+    "highlight": "F2A93B",
+    "bg_top": "F2F7FB",
+    "bg_bottom": "FFFFFF",
+    "surface": "FFFFFF",
+    "tint": "D6F0EC",
+    "text": "1F2933",
+    "muted": "6B7787",
+    "on_primary": "FFFFFF",
+    "line": "DCE6F0"
+  },
+  "fonts": {
+    "heading_ea": "Microsoft YaHei",
+    "body_ea": "Microsoft YaHei",
+    "heading_latin": "Arial",
+    "body_latin": "Arial",
+    "display_latin": "Arial Black"
+  },
+  "shape": {
+    "radius": 0.08,
+    "shadow": true,
+    "card_alpha": 0.95,
+    "depth": "whisper"
+  },
+  "decor": {
+    "header": true,
+    "leaf": false,
+    "brush": false,
+    "title_mark": true,
+    "sparkles": false,
+    "closing_dark": true,
+    "bullet": "icon",
+    "emphasis": "color",
+    "chrome": "standard"
+  },
+  "background": {
+    "decor": ["grid", "blobs"],
+    "cover_decor": ["grid", "blobs", "arcs"],
+    "closing_decor": ["grid", "blobs"]
+  },
+  "illustration": {
+    "style_prompt": "clean academic editorial illustration, navy blue and teal with small amber accents, crisp geometry, calm and trustworthy",
+    "negative": "text, letters, words, numbers, captions, watermark, logo, signature, frame, border, UI text",
+    "fallback_look": "flat"
+  },
+  "emphasis_color": "highlight",
+  "name": "academic-blue",
+  "label": "学术蓝",
+  "rules": [
+    "圆角极小，整体方正克制",
+    "强调色（金 / 青）只给最关键的一处",
+    "不用手绘笔刷与叶片装饰"
+  ],
+  "forbid": {}
+}

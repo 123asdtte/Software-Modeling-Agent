@@ -191,7 +191,7 @@ async def generate_ppt(req: PptRequest) -> dict:
     返回大纲与全部页面 JSON（供前端二次编辑重生成，PRD PPT-6）+ 下载地址。
     """
     from app.chains.generation_chain import generate_ppt_deck_async
-    from app.tools.ppt_generator import deck_to_pptx
+    from app.tools.luobo_renderer import render_pptx
 
     async def _run_ppt():
         async with _gen_semaphore:
@@ -210,7 +210,7 @@ async def generate_ppt(req: PptRequest) -> dict:
 
     file_id = uuid.uuid4().hex
     out = Path(settings.outputs_dir) / "ppt" / f"{file_id}.pptx"
-    deck_to_pptx(deck, out)
+    render_pptx(deck, out)
     return {
         "title": deck["outline"].get("title", req.topic),
         "total_pages": len(deck["pages"]),

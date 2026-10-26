@@ -47,10 +47,12 @@ PPT_SECTION_USER_TMPL = (
     "{{\n"
     '  "pages": [\n'
     '    {{"title": "页标题", "bullets": ["要点1（不超过 20 字）", "要点2", "要点3"], '
-    '"note": "讲课备注：讲解要点 + 时间分配建议（约 N 分钟）", "minutes": 3}}\n'
+    '"note": "讲课备注：讲解要点 + 时间分配建议（约 N 分钟）", '
+    '"minutes": 3, "section": "' + "{section}" + '"}}\n'
     "  ]\n"
     "}}\n"
-    "要求：恰好转出 {page_count} 页；bullets 每页 3-5 条；note 必须含讲解要点与时间建议。"
+    "要求：恰好转出 {page_count} 页；bullets 每页 3-5 条；note 必须含讲解要点与时间建议；"
+    "每页必须原样回显 section 字段为「{section}」（用于生成章节分隔页）。"
 )
 
 # ---------------- 教案（9 字段，PRD LS-1~LS-6）----------------
