@@ -34,3 +34,13 @@ outputs/
 
 # PlantUML 本地 jar（二进制，手工放置，不进 Git）
 tools/*.jar
+
+# vendored third-party skills (local snapshot, not versioned)
+third_party/
+
+# 本地 QA 调试产物（截图/预览页/一次性脚本，不入库）
+static/_qa_preview/
+scripts/_smoke_*.py
+scripts/qa_*.py
+scripts/skin_review.py
+scripts/ppt_html_preview.py
