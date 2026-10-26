@@ -223,7 +223,7 @@ def test_chat_adjust_endpoint_ok(monkeypatch):
         }
     )
 
-    def fake_adjust_sync(instruction, current_json, llm_factory=None):
+    def fake_adjust_sync(instruction, current_json, dtype, llm_factory=None):
         return fake_out
 
     monkeypatch.setattr(uml_adjust, "_adjust_sync", fake_adjust_sync)

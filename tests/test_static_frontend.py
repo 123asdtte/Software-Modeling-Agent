@@ -38,5 +38,7 @@ def test_frontend_uses_relative_api_paths():
 
     root = Path(__file__).resolve().parents[1] / "static"
     for js in (root / "js").glob("*.js"):
+        if js.name.endswith(".min.js"):
+            continue  # 第三方 vendor 库（如 drawio viewer）豁免硬编码检查
         src = js.read_text(encoding="utf-8")
         assert not re.search(r"http://|https://", src), f"{js.name} 含硬编码地址"
