@@ -17,7 +17,12 @@ DEPLOYMENT_SYSTEM_PROMPT = (
     "4. associations 表示节点间通信/依赖：kind=communication（通信路径）、dependency（依赖）、association；\n"
     "   from/to 必须引用已定义的节点名或构件名；\n"
     "5. 节点名/构件名唯一；spec 可写规格（如「2C4G」「replicas=3」）；\n"
-    "6. 严格只输出一个 JSON 对象，不要输出任何解释或代码围栏以外的文字。"
+    "6. 命名规范：名称只写业务语义（「教务服务」「订单库」），技术类型一律交给 stereotype 表达；\n"
+    "   严禁把英文构造型/技术词拼进名称（错误示例：「教务服务service」「选课服务deployment」\n"
+    "   「ingress ingress」——这类中英混拼会被质检报 DEP-NAME）；\n"
+    "7. 只建模需求中出现或可由需求直接推出的组件，严禁自行添加需求未提及的技术组件\n"
+    "   （需求没提 K8s/Ingress 就不要画「K8s 集群」「ingress」节点）；\n"
+    "8. 严格只输出一个 JSON 对象，不要输出任何解释或代码围栏以外的文字。"
 )
 
 DEPLOYMENT_USER_TMPL = (

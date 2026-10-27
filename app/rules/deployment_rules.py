@@ -8,6 +8,8 @@
 模型层已拦的结构非法（节点重复/端点缺失/构件宿主不存在）这里做防御性复查。
 """
 
+import re
+
 from app.models.review import ReviewIssue, ReviewReport
 from app.models.uml import DeploymentModel
 
@@ -127,6 +129,25 @@ def check_deployment_model(model: DeploymentModel) -> ReviewReport:
                 suggestion="补充 Service 节点，形成 Ingress → Service → Pod 链路",
             )
         )
+
+    # ---- DEP-NAME 名称与构造型/技术词重复（如「教务服务service」「ingress ingress」）----
+    for n in model.nodes:
+        stereo = n.stereotype.strip()
+        if not stereo:
+            continue
+        # 名称尾部出现与构造型相同的英文单词（大小写不敏感）即为中英混拼冗余
+        tail = re.search(r"[A-Za-z]+$", n.name)
+        if tail and tail.group(0).lower() == stereo.lower() and n.name != stereo:
+            issues.append(
+                _issue(
+                    "DEP-NAME",
+                    "warning",
+                    n.name,
+                    f"节点名「{n.name}」把构造型「{stereo}」重复拼进了名称，中英混拼不专业",
+                    rule_group="命名规范",
+                    suggestion=f"名称只写业务语义（如「教务服务」），技术类型交给 stereotype=\"{stereo}\" 表达",
+                )
+            )
 
     passed = not any(i.level == "error" for i in issues)
     return ReviewReport(diagram_type=model.type, passed=passed, issues=issues)

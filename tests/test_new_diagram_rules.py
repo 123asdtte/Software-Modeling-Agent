@@ -318,3 +318,47 @@ def test_deployment_k8s_full_chain_passes_without_k8s_warning():
     )
     assert report.passed is True
     assert "DEP-K8S" not in _ids(report)
+
+
+def test_deployment_rule_flags_cjk_english_name_duplication():
+    """回归：DEP-NAME 必须拦住「教务服务service」这类中英混拼命名。"""
+    from app.models.uml import DeploymentModel
+    from app.rules.deployment_rules import check_deployment_model
+
+    model = DeploymentModel.model_validate(
+        {
+            "type": "deployment",
+            "title": "教务架构",
+            "nodes": [
+                {"name": "教务服务service", "kind": "exec_env", "stereotype": "service"},
+                {"name": "MySQL", "kind": "device", "stereotype": "db"},
+            ],
+            "artifacts": [],
+            "associations": [{"from": "教务服务service", "to": "MySQL", "kind": "communication"}],
+        }
+    )
+    report = check_deployment_model(model)
+    hits = [i for i in report.issues if i.rule_id == "DEP-NAME"]
+    assert len(hits) == 1
+    assert hits[0].level == "warning"
+    assert "教务服务service" in hits[0].target
+
+
+def test_deployment_rule_allows_clean_naming():
+    """正常命名（中文业务名 + stereotype）不应被 DEP-NAME 误报。"""
+    from app.models.uml import DeploymentModel
+    from app.rules.deployment_rules import check_deployment_model
+
+    model = DeploymentModel.model_validate(
+        {
+            "type": "deployment",
+            "title": "教务架构",
+            "nodes": [
+                {"name": "教务服务", "kind": "exec_env", "stereotype": "service"},
+                {"name": "MySQL 主库", "kind": "device", "stereotype": "db"},
+            ],
+            "artifacts": [],
+            "associations": [{"from": "教务服务", "to": "MySQL 主库", "kind": "communication"}],
+        }
+    )
+    assert not [i for i in check_deployment_model(model).issues if i.rule_id == "DEP-NAME"]
