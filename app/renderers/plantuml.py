@@ -382,14 +382,22 @@ def render_statemachine_plantuml(model: StateMachineModel) -> str:
 
     状态引用一律使用安全别名 st_N：LLM 生成的 id 可能含连字符等
     PlantUML 标识符非法字符（实测 S-01 导致 Error line 2）。
-    输出顺序：状态定义在前 → 初始转换 → 普通转换 → 终态收尾。
+    输出顺序：状态定义在前 → 初始转换 → 普通转换。
+
+    终态（kind=final）**绝不声明为具名状态**，也不允许成为转换的具名目标：
+    指向终态的转换必须直接写成 `--> [*]`。否则 PlantUML 会把未声明的
+    别名 st_N 当成一个真实状态画出来（实测出现名字为 "st_7" 的幽灵节点）。
     """
     lines: list[str] = ["@startuml"]
     alias = {s.id: f"st_{i}" for i, s in enumerate(model.states)}
+    final_ids = {s.id for s in model.states if s.kind == StateKind.FINAL}
 
     def dst_label(tid: str) -> str:
         if tid == _HISTORY_TOKEN:
             return "H"
+        # 终态渲染成终结点 [*]，不引用任何别名
+        if tid in final_ids:
+            return "[*]"
         return alias.get(tid, tid)
 
     # 1) 普通/挂起状态定义（带显示名，先于任何转换引用）
@@ -406,9 +414,9 @@ def render_statemachine_plantuml(model: StateMachineModel) -> str:
         if first:
             lines.append(f"[*] --> {dst_label(first.target)}")
 
-    # 3) 其他转换（跳过 initial 的自动首转换）
+    # 3) 其他转换（跳过 initial 的自动首转换；从终态出发的转换非法，跳过）
     for t in model.transitions:
-        if t.source in initial_ids:
+        if t.source in initial_ids or t.source in final_ids:
             continue
         src = "H" if t.source == _HISTORY_TOKEN else alias.get(t.source, t.source)
         dst = dst_label(t.target)
@@ -421,11 +429,6 @@ def render_statemachine_plantuml(model: StateMachineModel) -> str:
         if parts:
             arrow += " : " + " ".join(parts)
         lines.append(arrow)
-
-    # 4) 最终伪状态 → [*]
-    for s in model.states:
-        if s.kind == StateKind.FINAL:
-            lines.append(f"{alias[s.id]} --> [*]")
 
     lines.append("@enduml")
     return "\n".join(lines)

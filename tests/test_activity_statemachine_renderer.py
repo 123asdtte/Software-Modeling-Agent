@@ -153,10 +153,10 @@ def test_statemachine_wrapped_by_startuml_enduml():
 
 
 def test_statemachine_initial_final_markers():
-    """初始 [*] --> 与最终 --> [*] 标记出现。"""
+    """初始 [*] --> 与指向终态的 --> [*] 均出现。"""
     out = _render_statemachine()
     assert "[*] --> st_1" in out
-    assert "st_4 --> [*]" in out
+    assert "--> [*]" in out
 
 
 def test_statemachine_states_named():
@@ -170,7 +170,19 @@ def test_statemachine_transition_event():
     """转换携带触发事件标注 : 事件。"""
     out = _render_statemachine()
     assert "st_1 --> st_2 : 支付成功" in out
-    assert "st_2 --> st_4 : 完成" in out
+
+
+def test_statemachine_transition_to_final_renders_endpoint_token():
+    """指向终态的转换必须直接写成 --> [*]，不得引用终态别名。"""
+    out = _render_statemachine()
+    assert "st_2 --> [*] : 完成" in out
+
+
+def test_statemachine_final_state_never_becomes_phantom_node():
+    """回归：终态不得出现在任何具名位置，否则 PlantUML 会画出名为 st_N 的幽灵状态。"""
+    out = _render_statemachine()
+    # fin 是第 5 个状态 → 别名为 st_4；它既不该被声明，也不该被引用
+    assert "st_4" not in out
 
 
 def test_statemachine_history_transition():
