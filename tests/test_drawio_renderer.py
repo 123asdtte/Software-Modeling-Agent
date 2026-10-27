@@ -444,12 +444,19 @@ def test_sequence_drawio_message_arrows():
 
 
 def test_sequence_drawio_self_message_loops_right():
+    """自消息必须走显式右回环折点。
+
+    回归：早前用 edgeStyle=orthogonalEdgeStyle + source==target 让 drawio 自己算，
+    实际渲染退化成一条横贯整个画布的直线（实测截图确认）。
+    """
     model = _sequence_model(
         messages=[{"from": "选课服务", "to": "选课服务", "label": "校验", "order": 1}]
     )
     out = render_sequence_drawio(model)
     assert "exitX=1;" in out and "entryX=1;" in out
-    assert "edgeStyle=orthogonalEdgeStyle" in out
+    assert "edgeStyle=orthogonalEdgeStyle" not in out
+    # 两个右侧折点，构成回环
+    assert out.count("<mxPoint") == 2
 
 
 def test_sequence_drawio_fragment_box():
@@ -524,3 +531,109 @@ def test_deployment_drawio_empty_nodes_ok():
 def test_deployment_drawio_type_rejected():
     with pytest.raises(TypeError):
         render_deployment_drawio(123)  # type: ignore[arg-type]
+
+
+# ============================================================================
+# 回归：用例图必须画出参与者—用例关联（曾经整块漏画，只剩 include/extend 边）
+# ============================================================================
+
+
+def test_usecase_drawio_emits_actor_usecase_associations():
+    """UseCase.actors 的隐式关联必须落成真实边，否则导出图无任何连线。"""
+    out = render_usecase_drawio(_model())
+    root = ElementTree.fromstring(out)
+    edges = [c for c in root.iter("mxCell") if c.get("edge") == "1"]
+    # 学生→发布商品、管理员→审核商品、管理员→(include)发布商品 = 3 条
+    assert len(edges) == 3
+    assoc = [e for e in edges if (e.get("style") or "").startswith("endArrow=none")]
+    assert len(assoc) == 2
+
+
+def test_usecase_drawio_association_dedup_with_explicit_relation():
+    """隐式关联与显式 association 重复时只画一条。"""
+    model = _model(
+        relations=[
+            {"type": "include", "from": "UC-02", "to": "UC-01"},
+            {"type": "association", "from": "学生", "to": "UC-01"},
+        ]
+    )
+    root = ElementTree.fromstring(render_usecase_drawio(model))
+    edges = [c for c in root.iter("mxCell") if c.get("edge") == "1"]
+    assert len(edges) == 3  # include 1 + 关联 2（学生→发布 去重后仍 1 条 + 管理员→审核 1 条）
+
+
+def test_usecase_drawio_relations_all_reachable():
+    """每条边的 source/target 都必须指向已定义的节点（不允许悬空）。"""
+    root = ElementTree.fromstring(render_usecase_drawio(_model()))
+    ids = {c.get("id") for c in root.iter("mxCell")}
+    for c in root.iter("mxCell"):
+        if c.get("edge") == "1":
+            assert c.get("source") in ids
+            assert c.get("target") in ids
+
+
+# ============================================================================
+# 回归：时序图相邻片段框不得垂直重叠（曾经固定压 8px）
+# ============================================================================
+
+
+def _seq_two_fragments() -> SequenceModel:
+    """两个相邻 alt 片段、三根生命线的时序模型（用于片段间距回归）。"""
+    data = {
+        "type": "sequence",
+        "title": "选课",
+        "lifelines": [
+            {"name": "学生", "kind": "actor"},
+            {"name": "选课界面", "kind": "boundary"},
+            {"name": "教务服务", "kind": "control"},
+        ],
+        "messages": [
+            {"from": "学生", "to": "选课界面", "label": "提交", "kind": "sync", "order": 1},
+            {"from": "选课界面", "to": "教务服务", "label": "校验", "kind": "sync", "order": 2},
+            {"from": "教务服务", "to": "选课界面", "label": "ok", "kind": "return", "order": 3},
+            {"from": "选课界面", "to": "教务服务", "label": "锁定", "kind": "sync", "order": 4},
+            {"from": "教务服务", "to": "选课界面", "label": "fail", "kind": "return", "order": 5},
+            {"from": "选课界面", "to": "学生", "label": "提示", "kind": "return", "order": 6},
+        ],
+        "fragments": [
+            {"kind": "alt", "condition": "成功", "start_order": 2, "end_order": 3},
+            {"kind": "alt", "condition": "失败", "start_order": 4, "end_order": 5},
+        ],
+    }
+    return SequenceModel.model_validate(data)
+
+
+def _frag_rects(xml: str) -> list[tuple[float, float, float, float]]:
+    root = ElementTree.fromstring(xml)
+    rects = []
+    for c in root.iter("mxCell"):
+        cid = c.get("id") or ""
+        if cid.startswith("sd_frag_"):
+            g = c.find("mxGeometry")
+            rects.append(
+                (float(g.get("x")), float(g.get("y")), float(g.get("width")), float(g.get("height")))
+            )
+    return rects
+
+
+def test_sequence_drawio_fragments_do_not_overlap():
+    """相邻片段框之间必须留出垂直间隙（回归：曾固定重叠 8px）。"""
+    rects = _frag_rects(render_sequence_drawio(_seq_two_fragments()))
+    assert len(rects) == 2
+    (_, ay, _, ah), (_, by, _, _bh) = rects[0], rects[1]
+    assert ay + ah <= by, f"片段框重叠：上框底 {ay + ah} > 下框顶 {by}"
+
+
+def test_sequence_drawio_fragment_covers_its_messages():
+    """片段框高度必须覆盖其消息区间，不能为负或塌缩。"""
+    for x, y, w, h in _frag_rects(render_sequence_drawio(_seq_two_fragments())):
+        assert w > 0 and h >= 60
+        assert y > 0
+
+
+def test_sequence_drawio_all_edges_resolve():
+    root = ElementTree.fromstring(render_sequence_drawio(_seq_two_fragments()))
+    ids = {c.get("id") for c in root.iter("mxCell")}
+    for c in root.iter("mxCell"):
+        if c.get("edge") == "1":
+            assert c.get("source") in ids and c.get("target") in ids

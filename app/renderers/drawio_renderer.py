@@ -91,28 +91,85 @@ def render_usecase_drawio(model: UseCaseModel) -> str:
         )
 
     # UseCase：边界内 2 列网格（确定性坐标）
-    for i, uc in enumerate(model.usecases):
-        col = i % 2
-        row = i // 2
+    # 先按「首个关联参与者」稳定排序：同一参与者的用例聚成一个连续区段，
+    # 关联线才能在同一横向带内散开，否则连线会横穿整列用例（实测穿过椭圆内部）。
+    actor_order = {a.name: i for i, a in enumerate(model.actors)}
+    ordered_cases = sorted(
+        enumerate(model.usecases),
+        key=lambda pair: (actor_order.get((pair[1].actors or [""])[0], 999), pair[0]),
+    )
+    uc_cells: list[str] = []
+    slot = -1
+    cur_actor = object()
+    for _, uc in ordered_cases:
+        first_actor = (uc.actors or [""])[0]
+        if first_actor != cur_actor:
+            cur_actor = first_actor
+            slot = (slot // 2 + 1) * 2 if slot >= 0 else 0  # 换参与者时另起一行
+        else:
+            slot += 1
+        col = slot % 2
+        row = slot // 2
         x = _BOUNDARY_X + _BOUNDARY_PAD + col * (_UC_W + _UC_COL_GAP)
         y = 40 + _BOUNDARY_PAD + row * (_UC_H + _UC_ROW_GAP)
-        cells.append(
+        uc_cells.append(
             f'<mxCell id="{usecase_alias[uc.id]}" value="{esc(uc.name)}" '
-            'style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">'
+            'style="ellipse;perimeter=ellipsePerimeter;whiteSpace=wrap;html=1;fillColor=#ffffff;" '
+            f'vertex="1" parent="1">'
             f'<mxGeometry x="{x}" y="{y}" width="{_UC_W}" height="{_UC_H}" as="geometry"/></mxCell>'
         )
 
-    # 关系边：方向保持 source → target，样式由类型决定
-    for edge_num, rel in enumerate(model.relations, start=1):
-        src = actor_alias.get(rel.source_id) or usecase_alias[rel.source_id]
-        dst = actor_alias.get(rel.target_id) or usecase_alias[rel.target_id]
-        style, label = _EDGE_STYLES[rel.type]
+    # 关系边：关联（UseCase.actors 隐式 + 显式 association，按无序对去重）在前，
+    # include/extend/泛化在后。与 PlantUML 渲染器保持同一套语义，否则 drawio
+    # 导出的用例图会只有参与者与用例漂浮、一根连线都没有。
+    assoc_pairs: list[tuple[str, str]] = []
+    seen_pairs: set[frozenset[str]] = set()
+    for uc in model.usecases:
+        for actor_name in uc.actors:
+            pair = frozenset((actor_alias[actor_name], usecase_alias[uc.id]))
+            if pair not in seen_pairs:
+                seen_pairs.add(pair)
+                assoc_pairs.append((actor_alias[actor_name], usecase_alias[uc.id]))
+
+    other_rels: list[tuple[str, str, RelationType]] = []
+    for rel in model.relations:
+        if rel.type == RelationType.ASSOCIATION:
+            src = actor_alias.get(rel.source_id) or usecase_alias[rel.source_id]
+            dst = actor_alias.get(rel.target_id) or usecase_alias[rel.target_id]
+            pair = frozenset((src, dst))
+            if pair not in seen_pairs:
+                seen_pairs.add(pair)
+                assoc_pairs.append((src, dst))
+        else:
+            other_rels.append(
+                (
+                    actor_alias.get(rel.source_id) or usecase_alias[rel.source_id],
+                    actor_alias.get(rel.target_id) or usecase_alias[rel.target_id],
+                    rel.type,
+                )
+            )
+
+    edge_cells: list[str] = []
+    edge_num = 0
+    assoc_style = _EDGE_STYLES[RelationType.ASSOCIATION][0]
+    for src, dst in assoc_pairs:
+        edge_num += 1
+        edge_cells.append(
+            f'<mxCell id="edge_{edge_num}" style="{assoc_style}" edge="1" parent="1" '
+            f'source="{src}" target="{dst}"><mxGeometry relative="1" as="geometry"/></mxCell>'
+        )
+    for src, dst, rtype in other_rels:
+        edge_num += 1
+        style, label = _EDGE_STYLES[rtype]
         value_attr = f' value="{esc(label)}"' if label else ""
-        cells.append(
+        edge_cells.append(
             f'<mxCell id="edge_{edge_num}"{value_attr} style="{style}" edge="1" parent="1" '
             f'source="{src}" target="{dst}"><mxGeometry relative="1" as="geometry"/></mxCell>'
         )
 
+    # 层级：边界/参与者 → 连线 → 用例椭圆（椭圆最后画，压住穿过的线尾）
+    cells.extend(edge_cells)
+    cells.extend(uc_cells)
     body = "\n        ".join(cells)
     return (
         '<mxfile host="edu-agent" version="24.7.7">\n'
@@ -135,8 +192,8 @@ def render_usecase_drawio(model: UseCaseModel) -> str:
 
 _ACT_LANE_W = 220
 _ACT_LANE_GAP = 30
-_ACT_NODE_W = 150
-_ACT_NODE_H = 44
+_ACT_NODE_W = 172
+_ACT_NODE_H = 46
 _ACT_ROW_H = 78
 _ACT_TOP = 70
 
@@ -153,7 +210,7 @@ _NODE_SIZES = {
     "initial": (30, 30),
     "final": (30, 30),
     "action": (_ACT_NODE_W, _ACT_NODE_H),
-    "decision": (150, 70),
+    "decision": (172, 84),
     "fork": (150, 12),
     "join": (150, 12),
     "merge": (150, 60),
@@ -220,7 +277,58 @@ def render_activity_drawio(model: ActivityModel) -> str:
         li = assignments[tail][0] if tail else 0
         assignments[final_id] = (li, max_depth)
 
-    _LANE_W, _LANE_TOP, _ROW_H, _PAD_Y = 240, 40, 100, 60
+    # ---- 2.5) 并行分支布局：fork 的子节点并列同一行、左右分列 ----
+    # 否则两个分支会被排成上下两行，把「并行」画成「串行」——语义错误。
+    flows_by_src: dict[str, list] = {}
+    flows_by_dst: dict[str, list] = {}
+    for f in model.flows:
+        flows_by_src.setdefault(f.source, []).append(f)
+        flows_by_dst.setdefault(f.target, []).append(f)
+
+    pitch = _ACT_NODE_W + 24
+    col_dx: dict[str, float] = {}
+    bar_span: dict[str, int] = {}
+    max_span = _ACT_NODE_W
+    for node in model.nodes:
+        if node.kind.value != "fork":
+            continue
+        kids = flows_by_src.get(node.id, [])
+        if len(kids) < 2:
+            continue
+        base_row = assignments[node.id][1]
+        for i, f in enumerate(kids):
+            col_dx[f.target] = (i - (len(kids) - 1) / 2) * pitch
+            assignments[f.target] = (assignments[f.target][0], base_row + 1)
+        span = int((len(kids) - 1) * pitch + _ACT_NODE_W)
+        bar_span[node.id] = span
+        max_span = max(max_span, span)
+
+    for node in model.nodes:
+        if node.kind.value != "join":
+            continue
+        ins = flows_by_dst.get(node.id, [])
+        if len(ins) < 2:
+            continue
+        dxx = [col_dx.get(f.source, 0) for f in ins]
+        span = int(max(dxx) - min(dxx)) + _ACT_NODE_W
+        bar_span[node.id] = max(span, bar_span.get(node.id, 0))
+        max_span = max(max_span, bar_span[node.id])
+
+    # ---- 2.6) 行号归一：保证每个节点至少比所有前驱低一行（回边不参与）----
+    row_of = {nid: assignments[nid][1] for nid in assignments}
+    for node in model.nodes:
+        preds = [f.source for f in flows_by_dst.get(node.id, []) if f.source != node.id]
+        real_preds = [p for p in preds if row_of.get(p, 10**6) < row_of[node.id]]
+        if real_preds:
+            need = max(row_of[p] for p in real_preds) + 1
+            if need > row_of[node.id]:
+                row_of[node.id] = need
+    for nid, row in row_of.items():
+        assignments[nid] = (assignments[nid][0], row)
+    max_depth = max(row_of.values()) if row_of else 0
+
+    _LANE_TOP, _ROW_H, _PAD_Y = 40, 100, 60
+    _LANE_W = max(240, max_span + 60)  # 泳道至少容纳最宽的并行跨度
     total_rows = max_depth + 1
     lane_h = _PAD_Y + total_rows * _ROW_H + 60
 
@@ -247,7 +355,7 @@ def render_activity_drawio(model: ActivityModel) -> str:
     ]
     _SIZE = {
         "initial": (34, 34), "final": (34, 34),
-        "action": (150, 44), "decision": (150, 70),
+        "action": (172, 46), "decision": (172, 84),
         "fork": (150, 12), "join": (150, 12), "merge": (150, 60),
     }
     alias: dict[str, str] = {}
@@ -257,7 +365,9 @@ def render_activity_drawio(model: ActivityModel) -> str:
         alias[node.id] = f"act_{idx}"
         kind = node.kind.value
         w, h = _SIZE[kind]
-        cx = (_LANE_W - w) // 2
+        if node.id in bar_span:
+            w = bar_span[node.id]  # fork/join 横条要覆盖所有并行分支
+        cx = (_LANE_W - w) // 2 + int(col_dx.get(node.id, 0))
         cy = _PAD_Y + row * _ROW_H
         value = esc(node.name) if node.name else ""
         nid = alias[node.id]
@@ -292,21 +402,43 @@ def render_activity_drawio(model: ActivityModel) -> str:
         )
 
     # ---- 5) 控制流：正交边，统一出底入顶（相邻行自然成 Z 字折线）----
-    _FLOW = "edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" \
+    _FLOW = "edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;labelBackgroundColor=#ffffff;" \
             "exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;"
     decision_out_seq: dict[str, int] = {}
+    fork_out_seq: dict[str, int] = {}
+    join_in_seq: dict[str, int] = {}
     nodes_by_id = {n.id: n for n in model.nodes}
     for e_num, flow in enumerate(model.flows, start=1):
         src, dst = alias.get(flow.source), alias.get(flow.target)
         if not src or not dst:
             continue
         style = _FLOW
-        if nodes_by_id[flow.source].kind.value == "decision":
+        src_kind = nodes_by_id[flow.source].kind.value
+        dst_kind = nodes_by_id[flow.target].kind.value
+        if src_kind == "decision":
             n = decision_out_seq.get(src, 0)
             decision_out_seq[src] = n + 1
             if n > 0:  # 决策第二条分支从右侧出，避免与第一条重叠
-                style = ("edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;"
+                style = ("edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;labelBackgroundColor=#ffffff;"
                          "exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;")
+        elif src_kind == "fork":
+            # 并行分叉：每条分支从横条上按等分点下出，视觉上才是真分叉
+            k = len(flows_by_src.get(flow.source, []))
+            i = fork_out_seq.get(src, 0)
+            fork_out_seq[src] = i + 1
+            ex = (i + 1) / (k + 1) if k else 0.5
+            style = ("edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;labelBackgroundColor=#ffffff;"
+                     f"exitX={ex:.4f};exitY=1;exitDx=0;exitDy=0;"
+                     "entryX=0.5;entryY=0;entryDx=0;entryDy=0;")
+        elif dst_kind == "join":
+            # 并行汇合：每条入边按等分点入横条
+            k = len(flows_by_dst.get(flow.target, []))
+            i = join_in_seq.get(dst, 0)
+            join_in_seq[dst] = i + 1
+            ex = (i + 1) / (k + 1) if k else 0.5
+            style = ("edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;labelBackgroundColor=#ffffff;"
+                     "exitX=0.5;exitY=1;exitDx=0;exitDy=0;"
+                     f"entryX={ex:.4f};entryY=0;entryDx=0;entryDy=0;")
         cond = (flow.cond or "").strip().strip("[]").strip()
         value_attr = f' value="{esc(cond)}"' if cond else ""
         cells.append(
@@ -688,11 +820,14 @@ _SD_LL_W = 130
 _SD_LL_GAP = 60
 _SD_LEFT = 60
 _SD_TOP = 60
-_SD_MSG_TOP = 110
+_SD_MSG_TOP = 128
 _SD_MSG_ROW = 46
+_SD_FRAG_GAP = 10  # 相邻片段框的最小垂直间隙（px），避免边框压线
 _SD_BOTTOM = 50
 
 # 消息类型 → 箭头样式
+_SD_ARROW_LABEL_BG = "labelBackgroundColor=#ffffff;"
+
 _SD_ARROW = {
     MessageKind.SYNC: "endArrow=block;endFill=1;html=1;",
     MessageKind.ASYNC: "endArrow=open;endFill=0;html=1;",
@@ -755,8 +890,11 @@ def render_sequence_drawio(model: SequenceModel) -> str:
         m.order: _SD_MSG_TOP + idx * _SD_MSG_ROW for idx, m in enumerate(ordered)
     }
 
-    # ---- 3) 片段框（先画，位于消息下层；覆盖其 order 区间的全部端点生命线）----
-    for f_num, frag in enumerate(model.fragments, start=1):
+    # ---- 3) 片段框（画在消息下层；覆盖其 order 区间的全部端点生命线）----
+    # 相邻片段必须留缝：框顶取 start-30、框底取 end+24，若消息行距(_SD_MSG_ROW=46)
+    # 小于 54，两框会纵向压在一起。按 start_order 顺序布局并记录上一框底边兜底。
+    prev_bottom = 0
+    for f_num, frag in enumerate(sorted(model.fragments, key=lambda f: f.start_order), start=1):
         covered = [m for m in ordered if frag.start_order <= m.order <= frag.end_order]
         if not covered:
             continue
@@ -767,7 +905,10 @@ def render_sequence_drawio(model: SequenceModel) -> str:
         fx = max(0, min(end_xs) - 18)
         fw = max(end_xs) + _SD_LL_W + 18 - fx
         fy = msg_y[frag.start_order] - 30
-        fh = msg_y[frag.end_order] + 24 - fy
+        if fy < prev_bottom + _SD_FRAG_GAP:
+            fy = prev_bottom + _SD_FRAG_GAP
+        fh = max(60, msg_y[frag.end_order] + 24 - fy)
+        prev_bottom = fy + fh
         label = f"&#171;{esc(frag.kind)}&#187;"
         if frag.condition:
             label += f"&lt;br&gt;[{esc(frag.condition)}]"
@@ -787,14 +928,24 @@ def render_sequence_drawio(model: SequenceModel) -> str:
             continue
         y = msg_y[msg.order]
         ratio = (y - _SD_TOP) / ll_h
-        arrow = _SD_ARROW.get(msg.kind, _SD_ARROW[MessageKind.SYNC])
+        arrow = _SD_ARROW_LABEL_BG + _SD_ARROW.get(msg.kind, _SD_ARROW[MessageKind.SYNC])
+        geo_attr = '<mxGeometry relative="1" as="geometry"/>'
         if msg.source_id == msg.target_id:
-            # 自消息：从右侧出、稍低处入，正交折回
-            style = (
-                arrow
-                + "edgeStyle=orthogonalEdgeStyle;rounded=0;"
-                + f"exitX=1;exitY={ratio:.4f};exitDx=0;exitDy=0;"
-                + f"entryX=1;entryY={min(0.99, ratio + 0.05):.4f};entryDx=0;entryDy=0;"
+            # 自消息：drawio 的 reasoner 对 source==target 的正交自环会退化成一条横贯
+            # 全图的直线（实测），因此显式给两个右侧折点，画成标准右回环。
+            entry_ratio = min(0.99, ratio + 0.06)
+            style = arrow + "rounded=0;"
+            rx = xs[msg.source_id] + _SD_LL_W + 40
+            y1 = _SD_TOP + ratio * ll_h
+            y2 = _SD_TOP + entry_ratio * ll_h
+            geo_attr = (
+                '<mxGeometry relative="1" as="geometry"><Array as="points">'
+                f'<mxPoint x="{rx}" y="{y1:.0f}"/><mxPoint x="{rx}" y="{y2:.0f}"/>'
+                "</Array></mxGeometry>"
+            )
+            style += (
+                f"exitX=1;exitY={ratio:.4f};exitDx=0;exitDy=0;"
+                f"entryX=1;entryY={entry_ratio:.4f};entryDx=0;entryDy=0;"
             )
         else:
             style = (
@@ -805,7 +956,7 @@ def render_sequence_drawio(model: SequenceModel) -> str:
         label_attr = f' value="{esc(msg.label)}"' if msg.label else ""
         cells.append(
             f'<mxCell id="sd_msg_{m_num}"{label_attr} style="{style}" edge="1" parent="1" '
-            f'source="{src}" target="{dst}"><mxGeometry relative="1" as="geometry"/></mxCell>'
+            f'source="{src}" target="{dst}">{geo_attr}</mxCell>'
         )
 
     body = "\n        ".join(cells)
@@ -832,6 +983,7 @@ def render_sequence_drawio(model: SequenceModel) -> str:
 
 _DP_NODE_W = 200
 _DP_NODE_BASE_H = 72
+_DP_ART_TOP = 62  # 构件起始 y：需在节点顶对齐的标题（≈3 行 54px）之下
 _DP_ART_H = 36
 _DP_ART_GAP = 6
 _DP_COL_GAP = 70
@@ -848,11 +1000,16 @@ _DP_EDGE_STYLES: dict[DeployAssociationKind, str] = {
 
 
 def _dp_node_style(kind: DeployNodeKind) -> str:
-    """device 用浅灰底，exec_env 用白底，其余保持同一立方体骨架。"""
+    """device 用浅灰底，exec_env 用白底，其余保持同一立方体骨架。
+
+    标签必须顶对齐：立方体默认垂直居中，而构件（jar）从节点顶部偏移放置，
+    居中的标题会被构件压住（实测「教务服务deployment」被 jar 完全遮掉）。
+    """
     fill = "#f5f5f5" if kind == DeployNodeKind.DEVICE else "#ffffff"
     return (
         "shape=cube;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;"
         f"darkOpacity=0.05;darkOpacity2=0.1;fillColor={fill};"
+        "verticalAlign=top;align=center;spacingTop=6;fontSize=12;"
     )
 
 
@@ -917,7 +1074,7 @@ def render_deployment_drawio(model: DeploymentModel) -> str:
         for a_idx, art in enumerate(arts_by_node.get(nd.name, []), start=1):
             aid = f"{nid}_art_{a_idx}"
             alias[art.name] = aid
-            ay = _DP_NODE_BASE_H + (a_idx - 1) * (_DP_ART_H + _DP_ART_GAP)
+            ay = _DP_ART_TOP + (a_idx - 1) * (_DP_ART_H + _DP_ART_GAP)
             cells.append(
                 f'<mxCell id="{aid}" value="{esc(art.name)}" '
                 'style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;'
